@@ -38,12 +38,18 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 }
 
 void SymbolTable::handleLabel(string symbol, size_t locationCounter){
+	SymbolTableLine section = symbolTable[currentSection];
 	if(symbolTable.count(symbol)>0){
-		
-		throw new Exception("Symbol "+ symbol + " has already been defined");
+		SymbolTableLine &stline = symbolTable[symbol];
+		if(stline.ndx == SymbolSection::GLOBAL){
+			stline.value = locationCounter;
+			stline.ndx = section.num;
+		}
+		else{
+			throw new Exception("Symbol "+ symbol + " has already been defined");
+		}
 	}
 	else{
-		SymbolTableLine section = symbolTable[currentSection];
 		SymbolTableLine stline = *new SymbolTableLine(this->count++, locationCounter, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
 		symbolTable.insert(make_pair(symbol, stline));
 	}

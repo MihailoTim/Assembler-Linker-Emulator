@@ -80,20 +80,20 @@ text \"([^\"]*)\"
     yylval.number = 10 + (yytext[2] - '0');
     return REG; 
 }
-"$status" {
-    yylval.number = 0;
+"%status" {
+    yylval.symbol = "status";
     return STATUS;
 }
-"$handler" {
-    yylval.number = 1;
+"%handler" {
+    yylval.symbol = "handler";
     return HANDLER;
 }
-"$cause" {
-    yylval.number = 2;
+"%cause" {
+    yylval.symbol = "cause";
     return CAUSE;
 }
 {symbol} {
-    yylval.symbol = yytext;
+    yylval.symbol = strdup(yytext);
     return SYMBOL;
 }
 {bin} {
@@ -110,7 +110,7 @@ text \"([^\"]*)\"
 }
 
 {text} {
-    yylval.symbol = yytext;
+    yylval.symbol = strdup(yytext);
     return TEXT;
 }
 

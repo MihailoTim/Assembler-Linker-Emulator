@@ -15,6 +15,8 @@
     void yyerror(char *);
 
     FirstPass& firstPass = FirstPass::getInstance();
+
+    int lineCount = 1;
 %}
 
 %union {
@@ -34,15 +36,22 @@
 %type <symbol> line
 %type <stringVector> combinedList
 %type <symbol> text
+%type <symbol> csrreg
+%type <symbol> instruction0arg
+%type <symbol> instruction1reg
+%type <symbol> instruction2reg
+%type <symbol> instructionCSRRD
+%type <symbol> instructionCSRWR
+%type <symbol> expression
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
 %token XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR COMMA COLON SEMICOLON PERCENT DOLLAR MID_L_BRACKET MID_R_BRACKET QUOTATION
 %token PLUS MINUS
 
 %token <number> REG
-%token <number> STATUS
-%token <number> HANDLER
-%token <number> CAUSE
+%token <symbol> STATUS
+%token <symbol> HANDLER
+%token <symbol> CAUSE
 %token <number> BIN
 %token <number> DEC
 %token <number> HEX
@@ -55,18 +64,130 @@
 
 program:
     line{
-        int lineCount = firstPass.incAndGetLineCount();
+        lineCount++;
     } | 
     program line{
-        int lineCount = firstPass.incAndGetLineCount();
+        lineCount++;
     }
 
 line:
-    label | directive | label directive;
+    label | directive | label directive | instruction | label instruction;
+
+instruction:
+    instruction0arg {
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<endl;
+    } | 
+    instruction1reg REG {
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<" "<<$2<<endl;
+    } | 
+    instruction2reg REG COMMA REG {
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
+    } | 
+    instructionCSRRD csrreg COMMA REG {
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
+    } | 
+    instructionCSRWR REG COMMA csrreg {
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
+    };
+
+instruction0arg: 
+    HALT {
+        $$ = "halt";
+    } | 
+    INT {
+        $$ = "int";
+    } | 
+    IRET {
+        $$ = "iret";
+    } | 
+    RET {
+        $$ = "ret";
+    };
+
+instruction1reg:
+    PUSH {
+        $$ = "push";
+    } | 
+    POP {
+        $$ = "pop";
+    } | 
+    NOT {
+        $$ = "not";
+    };
+
+instruction2reg:
+    XCHG{
+        $$ = "xchg";
+    } |
+    ADD{
+        $$ = "add";
+    } |  
+    SUB{
+        $$ = "sub";
+    } | 
+    MUL{
+        $$ = "mul";
+    } | 
+    DIV{
+        $$ = "div";
+    } | 
+    AND {
+        $$ = "and";
+    } | 
+    OR {
+        $$ = "or";
+    } | 
+    XOR {
+        $$ = "xor";
+    } | 
+    SHR {
+        $$ = "shr";
+    } | 
+    SHL {
+        $$ = "shl";
+    };
+
+instructionCSRRD:
+    CSRRD {
+        $$ = "csrrd";
+    };
+
+instructionCSRWR:
+    CSRWR {
+        $$ = "csrwr";
+    };
+
+operand: 
+    DOLLAR literal{
+
+    } | 
+    DOLLAR symbol{
+
+    } | 
+    literal {
+
+    } | 
+    symbol {
+
+    } |
+    REG {
+
+    } | 
+    MID_L_BRACKET REG MID_R_BRACKET {
+
+    } | 
+    MID_L_BRACKET REG PLUS literal MID_R_BRACKET {
+
+    } | 
+    MID_L_BRACKET REG PLUS symbol MID_R_BRACKET {
+    }
+        
 
 directive:
     GLOBAL symbolList {
-        cout<<firstPass.getLineCount()<<": .global ";
+        cout<<lineCount<<": .global ";
         for(string sym : *($2)){
             firstPass.handleGlobalDirective(sym);
             cout<<sym<<" ";
@@ -76,7 +197,7 @@ directive:
         //firstPass.printSymbolTable();
     } |
     EXTERN symbolList {
-        cout<<firstPass.getLineCount()<<": .extern ";
+        cout<<lineCount<<": .extern ";
         for(string sym : *($2)){
             firstPass.handleExternDirective(sym);
             cout<<sym<<" ";
@@ -86,14 +207,14 @@ directive:
         //firstPass.printSymbolTable();
     } |
     SECTION symbol {
-        cout<<firstPass.getLineCount()<<": .section " <<($2)<<endl;
+        cout<<lineCount<<": .section " <<($2)<<endl;
 
         firstPass.handleSectionDirective(($2));
 
         //firstPass.printSectionTable();
     } |
     WORD combinedList {
-        cout<<firstPass.getLineCount()<<": .word ";
+        cout<<lineCount<<": .word ";
         for(string sym : *($2)){
             firstPass.incLocationCounter(4);
             cout<<sym<<" ";
@@ -104,17 +225,20 @@ directive:
     } |
     SKIP literalUnsigned {
         firstPass.incLocationCounter($2);
-        cout<<firstPass.getLineCount()<<": .skip "<<$2<<endl;
+        cout<<lineCount<<": .skip "<<$2<<endl;
     } | 
     ASCII text {
         string txt = *new string($2);
         string str = txt.substr(1, txt.size()-2);
         firstPass.handleAsciiDirective(str);
         firstPass.incLocationCounter(str.size());
-        cout<<firstPass.getLineCount()<<": .ascii "<<$2<<endl;
+        cout<<lineCount<<": .ascii "<<$2<<endl;
     } |
+    EQU symbol COMMA expression {
+        cout<<lineCount<<": .equ "<<$2<<", "<<$4<<endl;
+    } | 
     END {
-        cout<<".end\n";
+        cout<<lineCount<<": .end "<<endl;
         //firstPass.printSectionTable();
         firstPass.printSymbolTable();
         firstPass.printSectionTable();
@@ -195,7 +319,6 @@ symbol:
 label:
     symbol COLON {
         firstPass.handleLabel($1);
-        cout<<($1)<<endl;
         $$ = $1;
     };
 
@@ -203,10 +326,29 @@ text:
     TEXT {
         $$ = $1;
     }
+
+csrreg:
+    STATUS {
+        $$ = $1;
+    } | 
+    HANDLER {
+        $$ = $1;
+    } | 
+    CAUSE {
+        $$ = $1;
+    };
+
+expression:
+    symbol {
+        $$ = $1;
+    } | 
+    literal {
+        $$ = strdup(to_string($1).c_str());
+    }
 %%
 
 void yyerror(char *s) 
 {
-    cout<<"Syntax error on line: "<<firstPass.getLineCount()<<endl;
+    cout<<"Syntax error on line: "<<lineCount<<endl;
     throw new Exception("Syntax error");
 }
