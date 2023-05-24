@@ -31,10 +31,12 @@ public:
 
 	inline void handleSectionDirective(string symbol){symbolTable.handleSectionDirective(symbol, locationCounter);setLocationCounter(0); }
 
+	inline void handleEndDirective(){symbolTable.handleEndDirective(locationCounter);setLocationCounter(0);}
+
 	inline void handleLabel(string symbol){symbolTable.handleLabel(symbol, locationCounter);}
 
 	inline void handleAsciiDirective(string str){}
-	
+
 	inline void printSymbolTable(){symbolTable.printSymbolTable();}
 
 	inline void printSectionTable(){symbolTable.printSectionTable();}

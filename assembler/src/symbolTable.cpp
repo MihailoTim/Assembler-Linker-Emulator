@@ -37,6 +37,14 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 	}
 }
 
+void SymbolTable::handleEndDirective(size_t locationCounter){
+	SectionTableLine &sctLine = sectionTable[currentSection];
+	sctLine.length = locationCounter;
+	currentSection = "";
+	printSymbolTable();
+	printSectionTable();
+}
+
 void SymbolTable::handleLabel(string symbol, size_t locationCounter){
 	SymbolTableLine section = symbolTable[currentSection];
 	if(symbolTable.count(symbol)>0){

@@ -17,6 +17,8 @@ public:
 
 	void handleSectionDirective(string symbol, size_t locationCounter);
 
+	void handleEndDirective(size_t locationCounter);
+
 	void handleLabel(string symbol, size_t locationCounter);
 
 	void printSymbolTable();

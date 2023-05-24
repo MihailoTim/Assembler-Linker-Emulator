@@ -42,7 +42,12 @@
 %type <symbol> instruction2reg
 %type <symbol> instructionCSRRD
 %type <symbol> instructionCSRWR
+%type <symbol> instruction2reg1operand
+%type <symbol> instructionLD
+%type <symbol> instructionST
+%type <symbol> instructionJMP
 %type <symbol> expression
+%type <symbol> operand
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
 %token XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR COMMA COLON SEMICOLON PERCENT DOLLAR MID_L_BRACKET MID_R_BRACKET QUOTATION
@@ -83,14 +88,33 @@ instruction:
         cout<<lineCount<<": "<<$1<<" "<<$2<<endl;
     } | 
     instruction2reg REG COMMA REG {
+        firstPass.incLocationCounter(4);
         cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
     } | 
     instructionCSRRD csrreg COMMA REG {
+        firstPass.incLocationCounter(4);
         cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
     } | 
     instructionCSRWR REG COMMA csrreg {
+        firstPass.incLocationCounter(4);
         cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
-    };
+    } | 
+    instruction2reg1operand REG COMMA REG COMMA operand{
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<", "<<$6<<endl;
+    } | 
+    instructionLD operand COMMA REG{
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
+    } |
+    instructionST REG COMMA operand{
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<" "<<$2<<", "<<$4<<endl;
+    } |
+    instructionJMP operand{
+        firstPass.incLocationCounter(4);
+        cout<<lineCount<<": "<<$1<<" "<<$2<<endl;
+    }
 
 instruction0arg: 
     HALT {
@@ -159,29 +183,50 @@ instructionCSRWR:
         $$ = "csrwr";
     };
 
+instruction2reg1operand:
+    BEQ{
+        $$ = "beq";
+    } |
+    BNE{
+        $$ = "bne";
+    } | 
+    BGT{
+        $$ = "bgt";
+    };
+
+instructionLD:
+    LD{
+        $$ = "ld";
+    };
+
+instructionST:
+    ST{
+        $$ = "st";
+    }
+
+instructionJMP:
+    JMP{
+        $$ = "jmp";
+    }
+
 operand: 
     DOLLAR literal{
-
+        $$ = "$literal";
     } | 
     DOLLAR symbol{
-
+        $$ = "$symbol";
     } | 
     literal {
-
+        $$ = "literal";   
     } | 
     symbol {
-
+        $$ = "symbol";
     } |
     REG {
-
+        $$ = "%registar";
     } | 
     MID_L_BRACKET REG MID_R_BRACKET {
-
-    } | 
-    MID_L_BRACKET REG PLUS literal MID_R_BRACKET {
-
-    } | 
-    MID_L_BRACKET REG PLUS symbol MID_R_BRACKET {
+        $$ = "[%registar]";
     }
         
 
@@ -239,9 +284,7 @@ directive:
     } | 
     END {
         cout<<lineCount<<": .end "<<endl;
-        //firstPass.printSectionTable();
-        firstPass.printSymbolTable();
-        firstPass.printSectionTable();
+        firstPass.handleEndDirective();
         YYACCEPT;
     };
 

@@ -97,15 +97,15 @@ text \"([^\"]*)\"
     return SYMBOL;
 }
 {bin} {
-    yylval.number = stoi(yytext, nullptr, 2);
+    yylval.number = stol(yytext, nullptr, 2);
     return BIN;
 }
 {dec} {
-    yylval.number = atoi(yytext);
+    yylval.number = atol(yytext);
     return DEC;
 }
 {hex} {
-    yylval.number = stoi(yytext, nullptr, 16);
+    yylval.number = stol(yytext, nullptr, 16);
     return HEX;
 }
 
