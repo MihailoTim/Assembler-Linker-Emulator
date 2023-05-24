@@ -16,6 +16,7 @@ oct 0([1-9][0-9]*)
 bin ([01]+)b
 blank [ \t\n]
 comment #.*\n
+text \"([^\"]*)\"
 
 %%
 ".global" { return GLOBAL; }
@@ -60,6 +61,8 @@ comment #.*\n
 "[" { return MID_L_BRACKET; }
 "]" { return MID_R_BRACKET; }
 "\"" { return QUOTATION;}
+"+" {return PLUS;}
+"-" {return MINUS;}
 
 "sp" {
     yylval.number = 14;
@@ -90,20 +93,25 @@ comment #.*\n
     return CAUSE;
 }
 {symbol} {
-    yylval.symbol = strdup(yytext);
+    yylval.symbol = yytext;
     return SYMBOL;
 }
 {bin} {
     yylval.number = stoi(yytext, nullptr, 2);
-    return NUMBER;
+    return BIN;
 }
 {dec} {
     yylval.number = atoi(yytext);
-    return NUMBER;
+    return DEC;
 }
 {hex} {
     yylval.number = stoi(yytext, nullptr, 16);
-    return NUMBER;
+    return HEX;
+}
+
+{text} {
+    yylval.symbol = yytext;
+    return TEXT;
 }
 
 {blank}

@@ -33,9 +33,12 @@ public:
 
 	inline void handleLabel(string symbol){symbolTable.handleLabel(symbol, locationCounter);}
 
+	inline void handleAsciiDirective(string str){}
+	
 	inline void printSymbolTable(){symbolTable.printSymbolTable();}
 
 	inline void printSectionTable(){symbolTable.printSectionTable();}
+
 
 
 };

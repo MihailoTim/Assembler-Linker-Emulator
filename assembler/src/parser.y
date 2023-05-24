@@ -12,9 +12,6 @@
 
     using namespace std;
 
-    #define WORD_SIZE 4
-    #define INSTRUCTION_SIZE 4
-
     void yyerror(char *);
 
     FirstPass& firstPass = FirstPass::getInstance();
@@ -27,22 +24,30 @@
     std::vector<int>* intVector;
 }
 
-%type<number> literal
-%type<intVector> literalList
-%type<symbol> symbol
-%type<stringVector> symbolList
-%type<symbol> line
-%type<stringVector> combinedList
+%type <number> literal
+%type <number> literalSigned
+%type <number> literalUnsigned
+%type <symbol> label
+%type <intVector> literalList
+%type <symbol> symbol
+%type <stringVector> symbolList
+%type <symbol> line
+%type <stringVector> combinedList
+%type <symbol> text
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
 %token XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR COMMA COLON SEMICOLON PERCENT DOLLAR MID_L_BRACKET MID_R_BRACKET QUOTATION
+%token PLUS MINUS
 
 %token <number> REG
 %token <number> STATUS
 %token <number> HANDLER
 %token <number> CAUSE
-%token <number> NUMBER
+%token <number> BIN
+%token <number> DEC
+%token <number> HEX
 %token <symbol> SYMBOL
+%token <symbol> TEXT
 
 %start program
 
@@ -68,7 +73,7 @@ directive:
         }
         cout<<endl;
 
-        firstPass.printSymbolTable();
+        //firstPass.printSymbolTable();
     } |
     EXTERN symbolList {
         cout<<firstPass.getLineCount()<<": .extern ";
@@ -78,9 +83,9 @@ directive:
         }
         cout<<endl;
 
-        firstPass.printSymbolTable();
+        //firstPass.printSymbolTable();
     } |
-    SECTION SYMBOL {
+    SECTION symbol {
         cout<<firstPass.getLineCount()<<": .section " <<($2)<<endl;
 
         firstPass.handleSectionDirective(($2));
@@ -97,58 +102,88 @@ directive:
 
         //cout<<firstPass.getLocationCounter()<<endl;
     } |
-    SKIP NUMBER {
+    SKIP literalUnsigned {
         firstPass.incLocationCounter($2);
-        //cout<<firstPass.getLocationCounter()<<endl;
+        cout<<firstPass.getLineCount()<<": .skip "<<$2<<endl;
     } | 
+    ASCII text {
+        string txt = *new string($2);
+        string str = txt.substr(1, txt.size()-2);
+        firstPass.handleAsciiDirective(str);
+        firstPass.incLocationCounter(str.size());
+        cout<<firstPass.getLineCount()<<": .ascii "<<$2<<endl;
+    } |
     END {
         cout<<".end\n";
         //firstPass.printSectionTable();
         firstPass.printSymbolTable();
+        firstPass.printSectionTable();
         YYACCEPT;
     };
 
 combinedList:
-    NUMBER {
+    literal {
         $$ = new vector<string>();
         $$->push_back(to_string($1));
     }
     |
-    SYMBOL{
+    symbol {
         $$ = new vector<string>();
         $$->push_back($1);
     }
     |
-    combinedList COMMA NUMBER{
+    combinedList COMMA literal {
         $$->push_back(to_string($3));
     }
     |
-    combinedList COMMA SYMBOL{
+    combinedList COMMA symbol{
         $$->push_back($3);
     };
 
 literalList:
-    NUMBER {
+    literal {
         $$ = new vector<int>();
         $$->push_back($1);
     }
     |
-    literalList COMMA NUMBER {
+    literalList COMMA literal {
         $$->push_back($3)
     };
 
 literal:
-    NUMBER { 
-        $$ = $1; 
+    literalUnsigned {
+        $$ = $1;
+    } |
+    literalSigned {
+        $$ = $1;
     };
 
+literalSigned: 
+    PLUS literalUnsigned {
+        $$ = $2;
+    } |
+    MINUS literalUnsigned {
+        $$ = -$2;
+    };
+
+literalUnsigned:
+    BIN {
+        $$ = $1;
+    } | 
+    DEC {
+        $$ = $1;
+    } | 
+    HEX {
+        $$ = $1;
+    };
+
+
 symbolList:
-    SYMBOL{
+    symbol {
         $$ = new vector<string>();
         $$->push_back($1);
-    }
-    |
-    symbolList COMMA SYMBOL{
+    } |
+    symbolList COMMA symbol{
         $$->push_back($3);
     }
 
@@ -158,9 +193,16 @@ symbol:
     };
 
 label:
-    SYMBOL COLON{
+    symbol COLON {
         firstPass.handleLabel($1);
+        cout<<($1)<<endl;
+        $$ = $1;
     };
+
+text:
+    TEXT {
+        $$ = $1;
+    }
 %%
 
 void yyerror(char *s) 
