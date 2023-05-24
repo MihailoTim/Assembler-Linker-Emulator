@@ -20,48 +20,50 @@
 %}
 
 %union {
-    int number;
-    char* symbol;
+    int intVal;
+    char* stringVal;
     std::vector<std::string>* stringVector;
     std::vector<int>* intVector;
 }
 
-%type <number> literal
-%type <number> literalSigned
-%type <number> literalUnsigned
-%type <symbol> label
+%type <intVal> literal
+%type <intVal> literalSigned
+%type <intVal> literalUnsigned
+%type <stringVal> label
 %type <intVector> literalList
-%type <symbol> symbol
+%type <stringVal> symbol
 %type <stringVector> symbolList
-%type <symbol> line
+%type <stringVal> line
 %type <stringVector> combinedList
-%type <symbol> text
-%type <symbol> csrreg
-%type <symbol> instruction0arg
-%type <symbol> instruction1reg
-%type <symbol> instruction2reg
-%type <symbol> instructionCSRRD
-%type <symbol> instructionCSRWR
-%type <symbol> instruction2reg1operand
-%type <symbol> instructionLD
-%type <symbol> instructionST
-%type <symbol> instructionJMP
-%type <symbol> expression
-%type <symbol> operand
+%type <stringVal> text
+%type <stringVal> csrreg
+%type <stringVal> instruction0arg
+%type <stringVal> instruction1reg
+%type <stringVal> instruction2reg
+%type <stringVal> instructionCSRRD
+%type <stringVal> instructionCSRWR
+%type <stringVal> instruction2reg1operand
+%type <stringVal> instructionLD
+%type <stringVal> instructionST
+%type <stringVal> instructionJMP
+%type <stringVal> expression
+%type <stringVal> operand
+%type <stringVal> comment
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
 %token XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR COMMA COLON SEMICOLON PERCENT DOLLAR MID_L_BRACKET MID_R_BRACKET QUOTATION
 %token PLUS MINUS
 
-%token <number> REG
-%token <symbol> STATUS
-%token <symbol> HANDLER
-%token <symbol> CAUSE
-%token <number> BIN
-%token <number> DEC
-%token <number> HEX
-%token <symbol> SYMBOL
-%token <symbol> TEXT
+%token <intVal> REG
+%token <stringVal> STATUS
+%token <stringVal> HANDLER
+%token <stringVal> CAUSE
+%token <intVal> BIN
+%token <intVal> DEC
+%token <intVal> HEX
+%token <stringVal> SYMBOL
+%token <stringVal> TEXT
+%token <stringVal> COMMENT
 
 %start program
 
@@ -76,7 +78,11 @@ program:
     }
 
 line:
-    label | directive | label directive | instruction | label instruction;
+    label | label directive | label directive comment |
+    label | label instruction | label instruction comment |
+    directive | directive comment |
+    instruction | instruction comment | 
+    comment
 
 instruction:
     instruction0arg {
@@ -388,6 +394,11 @@ expression:
     literal {
         $$ = strdup(to_string($1).c_str());
     }
+
+comment:
+    COMMENT{
+        cout<<$1;
+    };
 %%
 
 void yyerror(char *s) 

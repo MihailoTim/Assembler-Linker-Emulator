@@ -4,6 +4,8 @@
     #include "../tmp/parser.h"
     using namespace std;
     extern int yylex();
+
+    //nounput noinput batch debug
 %}
 
 %option noyywrap
@@ -17,106 +19,116 @@ bin ([01]+)b
 blank [ \t\n]
 comment #.*\n
 text \"([^\"]*)\"
+pc %pc
+sp %sp
+cause %cause
+handler %handler
+status %status
+regX %r[0-9]
+reg1X %r1[0-5]
 
 %%
-".global" { return GLOBAL; }
-".extern" { return EXTERN; }
-".section" { return SECTION; }
-".word" { return WORD; }
-".skip" { return SKIP; }
-".ascii" { return ASCII;}
-".equ" { return EQU; }
-".end" { return END; }
-"halt" { return HALT; }
-"int" { return INT; }
-"iret" { return IRET; }
-"call" { return CALL; }
-"ret" { return RET; }
-"jmp" { return JMP; }
-"beq" { return BEQ; }
-"bne" { return BNE; }
-"bgt" { return BGT; }
-"push" { return PUSH; }
-"pop" { return POP; }
-"xchg" { return XCHG; }
-"add" { return ADD; }
-"sub" { return SUB; }
-"mul" { return MUL; }
-"div" { return DIV; }
-"not" { return NOT; }
-"and" { return AND; }
-"or" { return OR; }
-"xor" { return XOR; }
-"shl" { return SHL; }
-"shr" { return SHR; }
-"ld" { return LD; }
-"st" { return ST; }
-"csrrd" { return CSRRD;}
-"csrwr" { return CSRWR;}
-"," { return COMMA; }
-":" { return COLON; }
-";" { return SEMICOLON;}
-"%" { return PERCENT; }
-"$" { return DOLLAR; }
-"[" { return MID_L_BRACKET; }
-"]" { return MID_R_BRACKET; }
-"\"" { return QUOTATION;}
-"+" {return PLUS;}
-"-" {return MINUS;}
+".global" return GLOBAL; 
+".extern" return EXTERN;
+".section" return SECTION;
+".word" return WORD;
+".skip" return SKIP;
+".ascii" return ASCII;
+".equ" return EQU;
+".end" return END;
+"halt" return HALT; 
+"int" return INT;
+"iret" return IRET;
+"call" return CALL;
+"ret" return RET; 
+"jmp" return JMP;
+"beq" return BEQ;
+"bne" return BNE;
+"bgt" return BGT;
+"push" return PUSH;
+"pop" return POP;
+"xchg" return XCHG;
+"add" return ADD;
+"sub" return SUB;
+"mul" return MUL;
+"div" return DIV;
+"not" return NOT;
+"and" return AND;
+"or" return OR;
+"xor" return XOR;
+"shl" return SHL;
+"shr" return SHR;
+"ld" return LD;
+"st" return ST;
+"csrrd" return CSRRD;
+"csrwr" return CSRWR;
+"," return COMMA;
+":" return COLON;
+";" return SEMICOLON;
+"%" return PERCENT;
+"$" return DOLLAR;
+"[" return MID_L_BRACKET;
+"]" return MID_R_BRACKET;
+"\""  return QUOTATION;
+"+" return PLUS;
+"-" return MINUS;
 
-"sp" {
-    yylval.number = 14;
+{sp} {
+    yylval.intVal = 14;
     return REG;
 }
-"pc" {
-    yylval.number = 15;
+{pc} {
+    yylval.intVal = 15;
     return REG;
 }
-%r[0-9] {
-    yylval.number = yytext[2] - '0';
+{regX} {
+    yylval.intVal = yytext[2] - '0';
     return REG; 
 }
-%r1[0-5] {
-    yylval.number = 10 + (yytext[2] - '0');
+{reg1X} {
+    yylval.intVal = yytext[2] - '0' + 10;
     return REG; 
 }
-"%status" {
-    yylval.symbol = "status";
+{status} {
+    yylval.stringVal = "status";
     return STATUS;
 }
-"%handler" {
-    yylval.symbol = "handler";
+{handler} {
+    yylval.stringVal = "handler";
     return HANDLER;
 }
-"%cause" {
-    yylval.symbol = "cause";
+{cause} {
+    yylval.stringVal = "cause";
     return CAUSE;
 }
 {symbol} {
-    yylval.symbol = strdup(yytext);
+    yylval.stringVal = strdup(yytext);
     return SYMBOL;
 }
 {bin} {
-    yylval.number = stol(yytext, nullptr, 2);
+    yylval.intVal = stol(yytext, nullptr, 2);
     return BIN;
 }
 {dec} {
-    yylval.number = atol(yytext);
+    yylval.intVal = atol(yytext);
     return DEC;
 }
 {hex} {
-    yylval.number = stol(yytext, nullptr, 16);
+    yylval.intVal = stol(yytext, nullptr, 16);
     return HEX;
 }
 
 {text} {
-    yylval.symbol = strdup(yytext);
+    yylval.stringVal = strdup(yytext);
     return TEXT;
 }
 
-{blank}
+{comment} {
+    yylval.stringVal = strdup(yytext);
+    return COMMENT;
+}
 
-{comment}
+{blank}
 
 . {
     cout << "Can't parse [" << yytext << "]" << endl;
