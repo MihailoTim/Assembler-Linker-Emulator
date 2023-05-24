@@ -36,7 +36,7 @@ private:
 		SymbolBind bind;
 		int ndx;
 		string name;
-
+		
 		SymbolTableLine(){}
 		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), value(v), ndx(ind), bind(sb), type(st), name(sname), size(s){}
 	};

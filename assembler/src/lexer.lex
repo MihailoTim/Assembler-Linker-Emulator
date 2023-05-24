@@ -69,6 +69,8 @@ reg1X %r1[0-5]
 "$" return DOLLAR;
 "[" return MID_L_BRACKET;
 "]" return MID_R_BRACKET;
+"(" return SMALL_L_BRACKET;
+")" return SMALL_R_BRACKET;
 "\""  return QUOTATION;
 "+" return PLUS;
 "-" return MINUS;
@@ -90,19 +92,19 @@ reg1X %r1[0-5]
     return REG; 
 }
 {status} {
-    yylval.stringVal = "status";
+    yylval.stringVal = new string("status");
     return STATUS;
 }
 {handler} {
-    yylval.stringVal = "handler";
+    yylval.stringVal = new string("handler");
     return HANDLER;
 }
 {cause} {
-    yylval.stringVal = "cause";
+    yylval.stringVal = new string("cause");
     return CAUSE;
 }
 {symbol} {
-    yylval.stringVal = strdup(yytext);
+    yylval.stringVal = new string(yytext);
     return SYMBOL;
 }
 {bin} {
@@ -119,12 +121,12 @@ reg1X %r1[0-5]
 }
 
 {text} {
-    yylval.stringVal = strdup(yytext);
+    yylval.stringVal = new string(yytext);
     return TEXT;
 }
 
 {comment} {
-    yylval.stringVal = strdup(yytext);
+    yylval.stringVal = new string(yytext);
     return COMMENT;
 }
 

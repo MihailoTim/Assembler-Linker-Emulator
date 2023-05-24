@@ -4,11 +4,11 @@
 .extern my_counter
 .global handler
 .section my_code_handler
-handler:
- push %r1
+handler: 
+push %r1
  push %r2
  csrrd %cause, %r1
- ld $2, %r2
+ ld [%r3 + 0xFFFFFFFF], %r2
  beq %r1, %r2, my_isr_timer
  ld $3, %r2
  beq %r1, %r2, my_isr_terminal
