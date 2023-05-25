@@ -2,45 +2,64 @@
 #include <cstring>
 #include <fstream>
 #include <vector>
+#include "../h/firstPass.hpp"
+#include "../h/secondPass.hpp"
 
 using namespace std;
 
 extern FILE *yyin;
+extern int yylex();
 extern int yyparse();
 
-string outfilename = "";
+char* fileIn;
+char* fileOut;
+
+void checkArguments(int argc, char **argv){
+	if(argc == 1){
+		throw new Exception("Insufficient arguments\n");
+	}
+	else if(argc == 2){
+		fileIn = argv[1];
+	}
+	else if(argc == 3){
+		throw new Exception("Can't parse input arguments");
+	}
+	else if(argc == 4){
+		if(strcmp(argv[1], "-o") == 0){
+			fileOut = argv[2];
+			fileIn = argv[3];
+		}
+		else if(strcmp(argv[2], "-o") == 0){
+			fileOut = argv[3];
+			fileIn = argv[2];
+		}
+		else 
+			throw new Exception("Can't parse input arguments");
+	}
+	else 
+		throw new Exception("Can't parse input arguments");
+}
 
 int main(int argc, char** argv) {
-  	if(argc < 2) {
-	    printf("Error - Not enough arguments passed\n");
-	    exit(-1);
-  	}
 
-  	if(argc > 4) {
-	    printf("Error - Too many arguments passed\n");
-	    exit(-1);
-  	}
+	checkArguments(argc, argv);
 
-  	if(argc != 2)
-  	{
-	    printf("Incorrect number of arguments passed\n");
-	    exit(-1);  
-  	}
+	cout<<fileIn;
 
+	FirstPass &firstPass = FirstPass::getInstance();
+	SecondPass &secondPass = SecondPass::getInstance();
 
-	FILE* file;
-	char* filename;
-
-	filename = argv[1];
-	file = fopen(filename, "r");
-	if(!file) {
-		printf("Cannot open the file\n");
-		exit(-1);
+	FILE* file = fopen(fileIn, "r");
+	if(file) {
+		yyin = file;
+		yyparse();
+		fclose(file);
+		if(firstPass.getStatus() != FirstPass::PassStatus::FINISHED){
+			throw new Exception("End of file has been reached but .end was not found");
+		}
 	}
-
-	yyin = file;
-	yyparse();
-	fclose(yyin);
-	// cout << "kraj" << endl;
+	else{
+		cout<<"Can't open file"<<endl;
+	}
 	return 0;
 }

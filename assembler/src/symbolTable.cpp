@@ -3,10 +3,13 @@
 void SymbolTable::handleGlobalDirective(string symbol){
 	if(symbolTable.count(symbol)){
 		SymbolTableLine &stline = symbolTable[symbol];
-		stline.bind = SymbolBind::GLOB;
+		if(stline.bind != SymbolBind::UNBOUND)
+			stline.bind = SymbolBind::GLOB;
+		stline.global = true;
 	}
 	else{
-		SymbolTableLine *stline = new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::GLOB, SymbolSection::GLOBAL, symbol);
+		SymbolTableLine *stline = new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, SymbolSection::GLOBAL, symbol);
+		stline->global = true;
 		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
@@ -43,6 +46,10 @@ void SymbolTable::handleEquDirective(string symbol, size_t locationCounter){
 		SymbolTableLine &stline = symbolTable[symbol];
 		if(stline.ndx == SymbolSection::GLOBAL){
 			stline.ndx = section.num;
+			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
+		}
+		else if(stline.bind == SymbolBind::UNBOUND){
+			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
 		}
 		else{
 			throw new Exception("Symbol "+ symbol + " has already been defined");
@@ -58,8 +65,6 @@ void SymbolTable::handleEndDirective(size_t locationCounter){
 	SectionTableLine &sctLine = sectionTable[currentSection];
 	sctLine.length = locationCounter;
 	currentSection = "";
-	printSymbolTable();
-	printSectionTable();
 }
 
 void SymbolTable::handleLabel(string symbol, size_t locationCounter){
@@ -69,6 +74,11 @@ void SymbolTable::handleLabel(string symbol, size_t locationCounter){
 		if(stline.ndx == SymbolSection::GLOBAL){
 			stline.value = locationCounter;
 			stline.ndx = section.num;
+			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
+		}
+		else if(stline.bind == SymbolBind::UNBOUND){
+			stline.value = locationCounter;
+			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
 		}
 		else{
 			throw new Exception("Symbol "+ symbol + " has already been defined");

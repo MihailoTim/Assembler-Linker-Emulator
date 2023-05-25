@@ -4,6 +4,9 @@
 #include "../h/exceptions.hpp"
 using namespace std;
 
+#ifndef _SYMBOL_TABLE_HPP
+#define _SYMBOL_TABLE_HPP
+
 class SymbolTable{
 public:
 	static SymbolTable& getInstance(){
@@ -28,6 +31,8 @@ public:
 	void printSymbolTable();
 
 	void printSectionTable();
+
+	friend class SecondPass;
 private:
 	enum SymbolSection{GLOBAL=-1, UNDEFINED=0};
 	enum SymbolBind{LOC, GLOB, UNBOUND};
@@ -40,9 +45,10 @@ private:
 		SymbolBind bind;
 		int ndx;
 		string name;
+		bool global;
 		
 		SymbolTableLine(){}
-		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), value(v), ndx(ind), bind(sb), type(st), name(sname), size(s){}
+		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), value(v), ndx(ind), bind(sb), type(st), name(sname), size(s), global(false){}
 	};
 	struct SectionTableLine{
 		size_t base;
@@ -69,3 +75,5 @@ private:
 	SymbolTable(SymbolTable const&);
 	void operator=(SymbolTable const&);
 };
+
+#endif

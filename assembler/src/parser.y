@@ -8,6 +8,7 @@
     #include "../h/firstPass.hpp"
     #include "../h/assemblyLine.hpp"
     #include "../h/assemblyFile.hpp"
+    #include "../h/secondPass.hpp"
     extern int yylex();
     extern int yyparse();
     extern FILE *yyin;
@@ -77,25 +78,32 @@
 %token <stringVal> COMMENT
 
 %start program
-
 %%
 
 program:
-    line{
-        lineCount++;
-        file->writeLine(currentLine);
-        currentLine = new AssemblyLine(lineCount);
-        if(isEnd){
-            file->printFile();
-            YYACCEPT;
-        }
-    } | 
     program line{
         lineCount++;
         file->writeLine(currentLine);
         currentLine = new AssemblyLine(lineCount);
         if(isEnd){
             file->printFile();
+            firstPass.setStatus(FirstPass::PassStatus::FINISHED);
+            SecondPass &secondPass = SecondPass::getInstance();
+            secondPass.setFile(file);
+            secondPass.start();
+            YYACCEPT;
+        }
+    } | 
+    line{
+        lineCount++;
+        file->writeLine(currentLine);
+        currentLine = new AssemblyLine(lineCount);
+        if(isEnd){
+            file->printFile();
+            firstPass.setStatus(FirstPass::PassStatus::FINISHED);
+            SecondPass &secondPass = SecondPass::getInstance();
+            secondPass.setFile(file);
+            secondPass.start();
             YYACCEPT;
         }
     }
@@ -268,7 +276,7 @@ operand:
         $$ = new string(to_string($1));   
     } | 
     symbol {
-        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::IMMED, false);
+        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false);
         firstPass.handleSymbolReference(*$1);
         $$ = new string(*($1));
     } |
@@ -333,6 +341,7 @@ directive:
         currentLine->mnemonic = ".equ";
         firstPass.handleEquDirective(*$2);
         currentLine->args.push_back(new Argument(0, *$2, ArgumentType::SYM, AddressType::MEMDIR, false));
+        currentLine->args.push_back(delayedOperand);
     } | 
     END {
         currentLine->mnemonic = ".end";
@@ -349,7 +358,7 @@ combinedList:
     |
     symbol {
         $$ = new vector<string>();
-        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false));
         firstPass.handleSymbolReference(*$1);
         $$->push_back(*$1);
     }
@@ -360,7 +369,7 @@ combinedList:
     }
     |
     combinedList COMMA symbol{
-        currentLine->args.push_back(new Argument(0, *$3, ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        currentLine->args.push_back(new Argument(0, *$3, ArgumentType::SYM, AddressType::MEMDIR, false));
         firstPass.handleSymbolReference(*$3);
         $$->push_back(*$3);
     };
@@ -442,12 +451,12 @@ csrreg:
 
 expression:
     symbol {
-        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false));
+        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false);
         firstPass.handleSymbolReference(*$1);
         $$ = $1;
     } | 
     literal {
-        currentLine->args.push_back(new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false);
         $$ = new string(to_string($1));
     }
 

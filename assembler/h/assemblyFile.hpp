@@ -4,6 +4,9 @@
 
 using namespace std;
 
+#ifndef _ASSEMBLY_FILE_HPP
+#define _ASSEMBLY_FILE_HPP
+
 class AssemblyFile{
 	vector<AssemblyLine*> code;
 
@@ -16,3 +19,5 @@ public:
 		}
 	}
 };
+
+#endif
