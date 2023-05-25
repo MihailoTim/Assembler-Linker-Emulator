@@ -74,6 +74,7 @@ reg1X %r1[0-5]
 "\""  return QUOTATION;
 "+" return PLUS;
 "-" return MINUS;
+"\n" return NEWLINE;
 
 {sp} {
     yylval.intVal = 14;

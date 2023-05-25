@@ -44,8 +44,6 @@ int main(int argc, char** argv) {
 
 	checkArguments(argc, argv);
 
-	cout<<fileIn;
-
 	FirstPass &firstPass = FirstPass::getInstance();
 	SecondPass &secondPass = SecondPass::getInstance();
 

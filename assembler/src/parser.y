@@ -15,7 +15,7 @@
 
     using namespace std;
 
-    void yyerror(char *);
+    void yyerror(const char *);
 
     FirstPass& firstPass = FirstPass::getInstance();
 
@@ -63,8 +63,9 @@
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
 %token XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR COMMA COLON SEMICOLON PERCENT DOLLAR MID_L_BRACKET MID_R_BRACKET QUOTATION
-%token SMALL_L_BRACKET SMALL_R_BRACKET
+%token SMALL_L_BRACKET SMALL_R_BRACKET NEWLINE
 %token PLUS MINUS
+%token FEND 0 
 
 %token <intVal> REG
 %token <stringVal> STATUS
@@ -76,6 +77,8 @@
 %token <stringVal> SYMBOL
 %token <stringVal> TEXT
 %token <stringVal> COMMENT
+
+%define parse.error verbose;
 
 %start program
 %%
@@ -109,11 +112,11 @@ program:
     }
 
 line:
-    label | label directive | label directive comment |
-    label | label instruction | label instruction comment |
-    directive | directive comment |
-    instruction | instruction comment | 
-    comment
+    label NEWLINE| label directive NEWLINE| label directive comment |
+    label NEWLINE| label instruction NEWLINE| label instruction comment |
+    directive NEWLINE| directive comment |
+    instruction NEWLINE| instruction comment | 
+    comment | lastLine
 
 instruction:
     instruction0arg {
@@ -464,10 +467,18 @@ comment:
     COMMENT{
         currentLine->comment = *$1;
     };
+
+lastLine:
+    END FEND{
+        currentLine->mnemonic = ".end";
+        firstPass.handleEndDirective();
+        isEnd = true;
+    };
 %%
 
-void yyerror(char *s) 
+void yyerror(const char *s) 
 {
-    cout<<"Syntax error on line: "<<lineCount<<endl;
+    cout<<"syntax error on line: "<<lineCount<<endl;
+    cout<<s<<endl;
     throw new Exception("Syntax error");
 }
