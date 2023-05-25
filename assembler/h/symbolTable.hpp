@@ -19,7 +19,11 @@ public:
 
 	void handleEndDirective(size_t locationCounter);
 
+	void handleEquDirective(string symbol, size_t locationCounter);
+
 	void handleLabel(string symbol, size_t locationCounter);
+
+	void handleSymbolReference(string symbol, size_t locationCounter);
 
 	void printSymbolTable();
 

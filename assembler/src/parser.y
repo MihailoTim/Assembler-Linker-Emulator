@@ -6,6 +6,8 @@
     #include <stdlib.h>
     #include "../h/exceptions.hpp"
     #include "../h/firstPass.hpp"
+    #include "../h/assemblyLine.hpp"
+    #include "../h/assemblyFile.hpp"
     extern int yylex();
     extern int yyparse();
     extern FILE *yyin;
@@ -18,14 +20,20 @@
 
     int lineCount = 1;
 
-    string currentLine = "";
+    bool isEnd = false;
+
+    AssemblyFile *file = new AssemblyFile();
+
+    AssemblyLine *currentLine = new AssemblyLine(lineCount);
+
+    Argument* delayedOperand;
 %}
 
 %union {
     int intVal;
     std::string *stringVal;
+    std::vector<std::string>* intVector;
     std::vector<std::string>* stringVector;
-    std::vector<int>* intVector;
 }
 
 %type <intVal> literal
@@ -75,11 +83,21 @@
 program:
     line{
         lineCount++;
-        currentLine = "";
+        file->writeLine(currentLine);
+        currentLine = new AssemblyLine(lineCount);
+        if(isEnd){
+            file->printFile();
+            YYACCEPT;
+        }
     } | 
     program line{
         lineCount++;
-        currentLine = "";
+        file->writeLine(currentLine);
+        currentLine = new AssemblyLine(lineCount);
+        if(isEnd){
+            file->printFile();
+            YYACCEPT;
+        }
     }
 
 line:
@@ -91,49 +109,55 @@ line:
 
 instruction:
     instruction0arg {
-        currentLine+= (*$1);
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instruction1reg REG {
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<$2<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instruction2reg REG COMMA REG {
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<$2<<", "<<$4<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instructionCSRRD csrreg COMMA REG {
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument(0, *$2, ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<*($2)<<", "<<$4<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instructionCSRWR REG COMMA csrreg {
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument(0, *$4, ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<$2<<", "<<*($4)<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instruction2reg1operand REG COMMA REG COMMA operand{
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(delayedOperand);
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<$2<<", "<<$4<<" "<<*($6)<<endl;
+        currentLine->mnemonic = *($1);
     } | 
     instructionLD operand COMMA REG{
-        currentLine+= (*$1);
+        currentLine->args.push_back(delayedOperand);
+        currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<*($2)<<", "<<$4<<endl;
+        currentLine->mnemonic = *($1);
     } |
     instructionST REG COMMA operand{
-        currentLine+= (*$1);
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(delayedOperand);
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<$2<<", "<<*($4)<<endl;
+        currentLine->mnemonic = *($1);
     } |
     instructionJMP operand{
-        currentLine+= (*$1);
+        currentLine->args.push_back(delayedOperand);
         firstPass.incLocationCounter(4);
-        cout<<lineCount<<": "<<*($1)<<" "<<*($2)<<endl;
+        currentLine->mnemonic = *($1);
     }
 
 instruction0arg: 
@@ -231,104 +255,113 @@ instructionJMP:
 
 operand: 
     DOLLAR literal{
+        delayedOperand = new Argument($2, to_string($2), ArgumentType::LITERAL, AddressType::IMMED, true);
         $$ = new string("$"+ to_string($2));
     } | 
     DOLLAR symbol{
+        delayedOperand = new Argument(0, *$2, ArgumentType::LITERAL, AddressType::IMMED, false);
+        firstPass.handleSymbolReference(*$2);
         $$ = new string("$" + *($2));
     } | 
     literal {
+        delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, true);
         $$ = new string(to_string($1));   
     } | 
     symbol {
+        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::IMMED, false);
+        firstPass.handleSymbolReference(*$1);
         $$ = new string(*($1));
     } |
     REG {
+        delayedOperand = new Argument($1, to_string($1), ArgumentType::REGISTER, AddressType::REGDIR, false);
         $$ = new string("%r"+to_string($1));
     } | 
     MID_L_BRACKET REG MID_R_BRACKET {
+        delayedOperand = new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGIND, false);
         $$ = new string("[ %r" + to_string($2) + "]");
     } |
     MID_L_BRACKET REG PLUS literal MID_R_BRACKET {
+        delayedOperand = new Argument($2, to_string($4), ArgumentType::REGPLUSLIT, AddressType::REGINDOFF, false);
         $$ = new string("[ %r" + to_string($2) + " + " + to_string($4) + " ]");
     } |
     MID_L_BRACKET REG PLUS symbol MID_R_BRACKET {
+        delayedOperand = new Argument($2, *$4, ArgumentType::REGPLUSSYM, AddressType::REGINDOFF, false);
+        firstPass.handleSymbolReference(*$4);
         $$ = new string("[ %r" + to_string($2) + " + " + *($4) + " ]");
     };
 
 directive:
     GLOBAL symbolList {
-        currentLine+= ".global ";
-        cout<<lineCount<<": .global ";
+        currentLine->mnemonic = ".global";
         for(string sym : *($2)){
+            currentLine->args.push_back(new Argument(0, sym, ArgumentType::SYM, AddressType::MEMDIR, false));
             firstPass.handleGlobalDirective(sym);
-            cout<<sym<<" ";
         }
-        cout<<endl;
     } |
     EXTERN symbolList {
-        currentLine+= ".extern ";
-        cout<<lineCount<<": .extern ";
+        currentLine->mnemonic = ".extern";
         for(string sym : *($2)){
+            currentLine->args.push_back(new Argument(0, sym, ArgumentType::SYM, AddressType::MEMDIR, false));
             firstPass.handleExternDirective(sym);
-            cout<<sym<<" ";
         }
-        cout<<endl;
     } |
     SECTION symbol {
-        currentLine+= ".section ";
-        cout<<lineCount<<": .section " <<*($2)<<endl;
-
+        currentLine->mnemonic = ".section";
+        currentLine->args.push_back(new Argument(0, *$2, ArgumentType::SYM, AddressType::MEMDIR, false));
         firstPass.handleSectionDirective(*($2));
     } |
     WORD combinedList {
-        currentLine+= ".word ";
-        cout<<lineCount<<": .word ";
+        currentLine->mnemonic = ".word";
         for(string sym : *($2)){
             firstPass.incLocationCounter(4);
-            cout<<sym<<" ";
         }
-        cout<<endl;
     } |
     SKIP literalUnsigned {
-        currentLine+= ".skip ";
+        currentLine->mnemonic = ".skip";
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::LITERAL, AddressType::MEMDIR, false));
         firstPass.incLocationCounter($2);
-        cout<<lineCount<<": .skip "<<$2<<endl;
     } | 
     ASCII text {
-        currentLine+= ".ascii ";
+        currentLine->mnemonic = ".ascii";
         string txt = *new string(*$2);
         string str = txt.substr(1, txt.size()-2);
         firstPass.handleAsciiDirective(str);
+        currentLine->args.push_back(new Argument(0, str, ArgumentType::SYM, AddressType::MEMDIR, false));
         firstPass.incLocationCounter(str.size());
-        cout<<lineCount<<": .ascii "<<$2<<endl;
     } |
     EQU symbol COMMA expression {
-        currentLine+= ".equ ";
-        cout<<lineCount<<": .equ "<<*($2)<<", "<<*($4)<<endl;
+        currentLine->mnemonic = ".equ";
+        firstPass.handleEquDirective(*$2);
+        currentLine->args.push_back(new Argument(0, *$2, ArgumentType::SYM, AddressType::MEMDIR, false));
     } | 
     END {
-        currentLine+= ".end ";
-        cout<<lineCount<<": .end "<<endl;
+        currentLine->mnemonic = ".end";
         firstPass.handleEndDirective();
-        YYACCEPT;
+        isEnd = true;
     };
 
 combinedList:
     literal {
         $$ = new vector<string>();
+        currentLine->args.push_back(new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false));
         $$->push_back(to_string($1));
     }
     |
     symbol {
         $$ = new vector<string>();
+        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        firstPass.handleSymbolReference(*$1);
         $$->push_back(*$1);
     }
     |
     combinedList COMMA literal {
+        currentLine->args.push_back(new Argument($3, to_string($3), ArgumentType::LITERAL, AddressType::MEMDIR, false));
         $$->push_back(to_string($3));
     }
     |
     combinedList COMMA symbol{
+        currentLine->args.push_back(new Argument(0, *$3, ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        firstPass.handleSymbolReference(*$3);
         $$->push_back(*$3);
     };
 
@@ -386,8 +419,8 @@ symbol:
 
 label:
     symbol COLON {
-        currentLine+= (*$1) + ": ";
         firstPass.handleLabel(*$1);
+        currentLine->label = *$1;
         $$ = $1;
     };
 
@@ -409,16 +442,18 @@ csrreg:
 
 expression:
     symbol {
+        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false));
+        firstPass.handleSymbolReference(*$1);
         $$ = $1;
     } | 
     literal {
+        currentLine->args.push_back(new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false));
         $$ = new string(to_string($1));
     }
 
 comment:
     COMMENT{
-        currentLine += *$1;
-        cout<<*($1);
+        currentLine->comment = *$1;
     };
 %%
 

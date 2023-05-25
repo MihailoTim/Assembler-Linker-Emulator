@@ -37,6 +37,23 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 	}
 }
 
+void SymbolTable::handleEquDirective(string symbol, size_t locationCounter){
+	SymbolTableLine section = symbolTable[currentSection];
+	if(symbolTable.count(symbol)>0){
+		SymbolTableLine &stline = symbolTable[symbol];
+		if(stline.ndx == SymbolSection::GLOBAL){
+			stline.ndx = section.num;
+		}
+		else{
+			throw new Exception("Symbol "+ symbol + " has already been defined");
+		}
+	}
+	else{
+		SymbolTableLine stline = *new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
+		symbolTable.insert(make_pair(symbol, stline));
+	}
+}
+
 void SymbolTable::handleEndDirective(size_t locationCounter){
 	SectionTableLine &sctLine = sectionTable[currentSection];
 	sctLine.length = locationCounter;
@@ -59,6 +76,14 @@ void SymbolTable::handleLabel(string symbol, size_t locationCounter){
 	}
 	else{
 		SymbolTableLine stline = *new SymbolTableLine(this->count++, locationCounter, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
+		symbolTable.insert(make_pair(symbol, stline));
+	}
+}
+
+void SymbolTable::handleSymbolReference(string symbol, size_t locationCounter){
+	SymbolTableLine section = symbolTable[currentSection];
+	if(symbolTable.count(symbol) == 0){
+		SymbolTableLine stline = *new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, section.num, symbol);
 		symbolTable.insert(make_pair(symbol, stline));
 	}
 }

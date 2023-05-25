@@ -2,6 +2,7 @@
 #include "../h/symbolTable.hpp"
 
 class FirstPass{
+	bool running;
 	size_t lineCount;
 	size_t locationCounter;
 	SymbolTable& symbolTable;
@@ -33,14 +34,17 @@ public:
 
 	inline void handleEndDirective(){symbolTable.handleEndDirective(locationCounter);setLocationCounter(0);}
 
+	inline void handleAsciiDirective(string str){}
+
+	inline void handleEquDirective(string symbol){symbolTable.handleEquDirective(symbol, locationCounter);}
+	
 	inline void handleLabel(string symbol){symbolTable.handleLabel(symbol, locationCounter);}
 
-	inline void handleAsciiDirective(string str){}
+	inline void handleSymbolReference(string symbol){symbolTable.handleSymbolReference(symbol, locationCounter);}
+
 
 	inline void printSymbolTable(){symbolTable.printSymbolTable();}
 
 	inline void printSectionTable(){symbolTable.printSectionTable();}
-
-
 
 };
