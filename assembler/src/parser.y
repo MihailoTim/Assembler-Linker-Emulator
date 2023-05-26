@@ -116,7 +116,7 @@ line:
     label NEWLINE| label instruction NEWLINE| label instruction comment |
     directive NEWLINE| directive comment |
     instruction NEWLINE| instruction comment | 
-    comment | lastLine
+    comment | lastLine | NEWLINE
 
 instruction:
     instruction0arg {

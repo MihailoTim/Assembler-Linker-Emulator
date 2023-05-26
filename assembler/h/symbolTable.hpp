@@ -54,7 +54,7 @@ private:
 		size_t base;
 		size_t length;
 		string name;
-		vector<string> content;
+		string content;
 		SectionTableLine(){}
 		SectionTableLine(size_t b, size_t l, string n): base(b), length(l), name(n){}
 	};

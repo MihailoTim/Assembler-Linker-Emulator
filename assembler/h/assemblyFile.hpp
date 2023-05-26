@@ -18,6 +18,8 @@ public:
 			line->printLine();
 		}
 	}
+
+	vector<AssemblyLine*> readFile(){return code;}
 };
 
 #endif

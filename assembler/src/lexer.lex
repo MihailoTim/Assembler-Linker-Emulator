@@ -24,8 +24,8 @@ sp %sp
 cause %cause
 handler %handler
 status %status
-regX %r[0-9]
-reg1X %r1[0-5]
+regX (%r)([0-9])
+reg1X (%r1)([0-5])
 
 %%
 ".global" return GLOBAL; 
@@ -89,7 +89,8 @@ reg1X %r1[0-5]
     return REG; 
 }
 {reg1X} {
-    yylval.intVal = yytext[2] - '0' + 10;
+    cout<<yytext[2]<<endl;
+    yylval.intVal = yytext[3] - '0' + 10;
     return REG; 
 }
 {status} {
