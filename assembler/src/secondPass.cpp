@@ -4,9 +4,10 @@
 
 string SecondPass::currentSection = "";
 size_t SecondPass::locationCounter = 0;
+SymbolTable* SecondPass::symbolTable = &SymbolTable::getInstance();
 
 void SecondPass::performBetweenPassCheck(){
-	map<string, SymbolTable::SymbolTableLine> symTab = symbolTable.symbolTable;
+	map<string, SymbolTable::SymbolTableLine> symTab = symbolTable->symbolTable;
 	for(auto stline : symTab){
 		if(stline.second.ndx == SymbolTable::SymbolSection::GLOBAL || stline.second.bind == SymbolTable::SymbolBind::UNBOUND){
 			throw new Exception("Symbol " + stline.first + " is being used but is not declared");
@@ -16,8 +17,9 @@ void SecondPass::performBetweenPassCheck(){
 
 void SecondPass::start(){
 	status = RUNNING;
-	symbolTable.printSymbolTable();
-	symbolTable.printSectionTable();
+	setSymbolTable(&SymbolTable::getInstance());
+	symbolTable->printSymbolTable();
+	symbolTable->printSectionTable();
 	performBetweenPassCheck();
 	performLineByLine();
 }
@@ -109,29 +111,33 @@ void SecondPass::handleRetInstruction(AssemblyLine* line) {
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
     locationCounter += 4;
-	string content = AssemblyInstruction::getBranchBytes(line);
     cout << "JMP\n";
+	int displ = handleBranchArgument(line->args[0]);
+	string content = AssemblyInstruction::getBranchBytes(line, displ);
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBeqInstruction(AssemblyLine* line) {
     locationCounter += 4;
     std::cout << "BEQ\n";
-	string content = AssemblyInstruction::getBranchBytes(line);
+	int displ = handleBranchArgument(line->args[2]);
+	string content = AssemblyInstruction::getBranchBytes(line, displ);
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBneInstruction(AssemblyLine* line) {
     locationCounter += 4;
     std::cout << "BNE\n";
-	string content = AssemblyInstruction::getBranchBytes(line);
+	int displ = handleBranchArgument(line->args[2]);
+	string content = AssemblyInstruction::getBranchBytes(line, displ);
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBgtInstruction(AssemblyLine* line) {
     locationCounter += 4;
     std::cout << "BGT\n";
-	string content = AssemblyInstruction::getBranchBytes(line);
+	int displ = handleBranchArgument(line->args[2]);
+	string content = AssemblyInstruction::getBranchBytes(line, displ);
 	cout<<content<<endl;
 }
 
@@ -240,4 +246,24 @@ void SecondPass::handleCsrrdInstruction(AssemblyLine* line) {
 void SecondPass::handleCsrwrInstruction(AssemblyLine* line) {
     locationCounter += 4;
     std::cout << "CSRWR\n";
+}
+
+int SecondPass::handleBranchArgument(Argument *arg){
+	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
+	if(arg->argType == ArgumentType::SYM){
+		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+		cout<<symline.ndx<<" "<<sctline.symTabId<<endl;
+		if(sctline.symTabId == symline.ndx && canFitInDispl(symline.value, locationCounter)){
+			return symline.value - locationCounter;
+		}
+		else
+			return 0;
+	}
+	if(arg->argType == ArgumentType::LITERAL){
+		if(canFitInDispl(arg->intVal, locationCounter))
+			return arg->intVal, locationCounter;
+		else
+			return 0;
+	}
+	return 0;
 }

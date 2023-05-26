@@ -55,8 +55,9 @@ private:
 		size_t length;
 		string name;
 		string content;
+		size_t symTabId;
 		SectionTableLine(){}
-		SectionTableLine(size_t b, size_t l, string n): base(b), length(l), name(n){}
+		SectionTableLine(size_t b, size_t l, string n, size_t stid): base(b), length(l), name(n), symTabId(stid){}
 	};
 
 	map<string, SymbolTableLine> symbolTable;
@@ -68,7 +69,7 @@ private:
 		count=0;
 		SymbolTableLine stline = *new SymbolTableLine(count++,0,0,SymbolType::NOTYPE, SymbolBind::LOC,SymbolSection::UNDEFINED, "");
 		symbolTable.insert(make_pair("", stline));
-		SectionTableLine secline = *new SectionTableLine(0, 0, "");
+		SectionTableLine secline = *new SectionTableLine(0, 0, "", 0);
 		sectionTable.insert(make_pair("", secline));
 		currentSection = "";
 	}

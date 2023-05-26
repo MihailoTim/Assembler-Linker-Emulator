@@ -1,6 +1,7 @@
 #include <string>
 #include "../h/argument.hpp"
 #include "../h/assemblyLine.hpp"
+#include "../h/symbolTable.hpp"
 #include <map>
 using namespace std;
 
@@ -9,7 +10,7 @@ public:
 	static string getHaltBytes();
 	static string getIntBytes();
 	static string getCallBytes(AssemblyLine* line);
-	static string getBranchBytes(AssemblyLine* line);
+	static string getBranchBytes(AssemblyLine* line, size_t displ = 0);
 	static string getXchgBytes(AssemblyLine* line);
 	static string getArithmBytes(AssemblyLine* line);
 	static string getLogicBytes(AssemblyLine* line);
@@ -22,7 +23,7 @@ public:
 
 	static long getValueOf(Argument *arg);
 
-	int opcode;
-	string mnemonic;
-	void (*handler)(AssemblyLine*);
+	static void setSymbolTable(SymbolTable *st){symbolTable = st;}
+
+	static SymbolTable *symbolTable;
 };

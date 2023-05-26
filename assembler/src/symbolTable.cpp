@@ -32,7 +32,7 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 		SectionTableLine &sctLine = sectionTable[currentSection];
 		sctLine.length = locationCounter;
 		currentSection = symbol;
-		SectionTableLine newSctLine = *new SectionTableLine(0, 0, symbol);
+		SectionTableLine newSctLine = *new SectionTableLine(0, 0, symbol, this->count);
 		sectionTable.insert(make_pair(symbol, newSctLine));
 		int num = this->count++;
 		SymbolTableLine stline = *new SymbolTableLine(num, 0, 0,SymbolType::SCTN, SymbolBind::LOC, num, symbol);
@@ -44,8 +44,8 @@ void SymbolTable::handleEquDirective(string symbol, size_t locationCounter){
 	SymbolTableLine section = symbolTable[currentSection];
 	if(symbolTable.count(symbol)>0){
 		SymbolTableLine &stline = symbolTable[symbol];
+		stline.ndx = section.num;
 		if(stline.ndx == SymbolSection::GLOBAL){
-			stline.ndx = section.num;
 			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
 		}
 		else if(stline.bind == SymbolBind::UNBOUND){
@@ -71,9 +71,9 @@ void SymbolTable::handleLabel(string symbol, size_t locationCounter){
 	SymbolTableLine section = symbolTable[currentSection];
 	if(symbolTable.count(symbol)>0){
 		SymbolTableLine &stline = symbolTable[symbol];
+		stline.ndx = section.num;
 		if(stline.ndx == SymbolSection::GLOBAL){
 			stline.value = locationCounter;
-			stline.ndx = section.num;
 			stline.bind = stline.global ? SymbolBind::GLOB : SymbolBind::LOC;
 		}
 		else if(stline.bind == SymbolBind::UNBOUND){

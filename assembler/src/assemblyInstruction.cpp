@@ -25,16 +25,19 @@ string AssemblyInstruction::getCallBytes(AssemblyLine* line){
 	return get4Bytes(32, 0, 0, 0);
 }
 
-string AssemblyInstruction::getBranchBytes(AssemblyLine *line){
+string AssemblyInstruction::getBranchBytes(AssemblyLine *line, size_t displ){
 	if(line->mnemonic == "jmp"){
 		int byte1 = 48;
 		int byte2 = 15 << 4;
-		return get4Bytes(byte1, byte2, 0, 0);
+		int byte3 = displ >> 8;
+		int byte4 = displ & 255;
+		return get4Bytes(byte1, byte2, byte3, byte4);
 	}
 
 	int byte1 = 0;
 	int byte2 = 15 << 4 | line->args[0]->intVal;
-	int byte3 = line->args[1]->intVal << 4;
+	int byte3 = line->args[1]->intVal << 4 | displ >> 8;
+	int byte4 = displ & 255;
 
 
 	if(line->mnemonic == "beq"){
@@ -46,7 +49,7 @@ string AssemblyInstruction::getBranchBytes(AssemblyLine *line){
 	if(line->mnemonic == "bgt"){
 		byte1 = 51;
 	}
-	return get4Bytes(byte1, byte2, byte3, 0);
+	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
 string AssemblyInstruction::getXchgBytes(AssemblyLine *line){

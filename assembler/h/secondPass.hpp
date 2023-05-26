@@ -64,7 +64,7 @@ public:
 		static SecondPass instance;
 		return instance;
 	}
-	SecondPass(AssemblyFile *f): file(f), symbolTable(SymbolTable::getInstance()), status(RUNNING){}
+	SecondPass(AssemblyFile *f): file(f), status(RUNNING){}
 
 	inline void setFile(AssemblyFile *f){file = f;}
 
@@ -77,6 +77,12 @@ public:
 	void handleDirective(AssemblyLine *line);
 
 	void handleInstruction(AssemblyLine *line);
+
+    void setSymbolTable(SymbolTable *st){symbolTable = st;}
+
+    static bool canFitInDispl(size_t first, size_t second){return ((int)first - (int)second <= 2<<11) &&  ((int)first-(int)second >= - (2<<11+1));}
+
+	static int handleBranchArgument(Argument *arg);
 
 	static void handleGlobalDirective(AssemblyLine *line);
 	static void handleExternDirective(AssemblyLine *line);
@@ -119,13 +125,13 @@ public:
 	inline void setStatus(PassStatus s){status = s;}
 private:
 	AssemblyFile *file;
-	SymbolTable &symbolTable;
+	static SymbolTable *symbolTable;
 	PassStatus status;
 
 	static string currentSection;
 	static size_t locationCounter;
 
-	SecondPass(): symbolTable(SymbolTable::getInstance()){}
+	SecondPass(){}
 	SecondPass(SecondPass const&);
 	void operator=(SecondPass const&);
 };

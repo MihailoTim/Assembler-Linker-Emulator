@@ -59,6 +59,7 @@
 %type <stringVal> instructionJMP
 %type <stringVal> expression
 %type <stringVal> operand
+%type <stringVal> branchOperand
 %type <stringVal> comment
 
 %token GLOBAL EXTERN SECTION WORD SKIP EQU END ASCII HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP 
@@ -146,7 +147,7 @@ instruction:
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
     } | 
-    instruction2reg1operand REG COMMA REG COMMA operand{
+    instruction2reg1operand REG COMMA REG COMMA branchOperand{
         currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
         currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         currentLine->args.push_back(delayedOperand);
@@ -165,7 +166,7 @@ instruction:
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
     } |
-    instructionJMP operand{
+    instructionJMP branchOperand{
         currentLine->args.push_back(delayedOperand);
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
@@ -262,6 +263,17 @@ instructionST:
 instructionJMP:
     JMP{
         $$ = new string("jmp");
+    }
+
+branchOperand:
+    literal {
+        delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, true);
+        $$ = new string(to_string($1));   
+    } | 
+    symbol {
+        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false);
+        firstPass.handleSymbolReference(*$1);
+        $$ = new string(*($1));
     }
 
 operand: 

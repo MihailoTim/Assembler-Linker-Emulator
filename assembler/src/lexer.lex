@@ -89,7 +89,6 @@ reg1X (%r1)([0-5])
     return REG; 
 }
 {reg1X} {
-    cout<<yytext[2]<<endl;
     yylval.intVal = yytext[3] - '0' + 10;
     return REG; 
 }
