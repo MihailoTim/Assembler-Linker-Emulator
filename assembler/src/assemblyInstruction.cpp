@@ -183,12 +183,63 @@ string AssemblyInstruction::getLoadBytes(AssemblyLine *line, size_t displ){
 	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
+string AssemblyInstruction::getStoreBytes(AssemblyLine *line, size_t displ){
+	int byte1;
+	int byte2;
+	int byte3;
+	int byte4;
+	if(line->args[1]->addrType == AddressType::IMMED){
+		//TODO
+		byte1 = 0x91;
+		byte2 = line->args[1]->intVal << 4;
+		byte3 = displ >> 8;
+		byte4 = displ & 255;
+		return get4Bytes(byte1, byte2, byte3, byte4);
+	}
+	if(line->args[1]->addrType == AddressType::MEMDIR){
+		//TODO
+		byte1 = 0x92;
+		byte2 = line->args[1]->intVal << 4;
+		byte3 = displ >> 8;
+		byte4 = displ & 255;
+		return get4Bytes(byte1, byte2, byte3, byte4);
+	}
+	if(line->args[1]->addrType == AddressType::REGDIR){
+		byte1 = 0x91;
+		byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+		return get4Bytes(byte1, byte2, byte3, byte4);
+	}
+	if(line->args[1]->addrType == AddressType::REGIND){
+		byte1 = 0x80;
+		byte2 = line->args[1]->intVal << 4 | 0;
+		byte3 = line->args[0]->intVal << 4 | 0;
+		return get4Bytes(byte1, byte2, byte3, byte4);
+	}
+	if(line->args[1]->addrType == AddressType::REGINDOFF){
+		byte1 = 0x80;
+		byte2 = line->args[1]->intVal << 4 | 0;
+		byte3 = line->args[0]->intVal << 4 | displ >> 8;
+		byte4 = displ & 255;
+		return get4Bytes(byte1, byte2, byte3, byte4);
+	}
+	return get4Bytes(byte1, byte2, byte3, byte4);
+}
+
 string AssemblyInstruction::getPopBytes(AssemblyLine *line, size_t displ){
 	//REGIND LOAD
 	int byte1 = 0x92;
 	int byte2 = line->args[0]->intVal << 4 | 0xE;
 	int byte3 = 0;
 	int byte4 = 4;
+	return get4Bytes(byte1, byte2, byte3, byte4);
+}
+
+string AssemblyInstruction::getPushBytes(AssemblyLine *line, size_t displ){
+	//REGIND STORE
+	int byte1 = 0x81;
+	int byte2 = 0xE << 4 | 0;
+	int byte3 = (-4) >> 8;
+	int byte4 = (-4) & 0xFF;
 	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 

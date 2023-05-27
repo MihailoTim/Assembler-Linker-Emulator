@@ -18,8 +18,9 @@ public:
 	static string getStoreBytes(AssemblyLine* line, size_t displ = 0);
 	static string getLoadBytes(AssemblyLine* line, size_t displ = 0);
 	static string getPopBytes(AssemblyLine* line, size_t displ = 0);
+	static string getPushBytes(AssemblyLine* line, size_t displ = 0);
 	static string getRetBytes(AssemblyLine* line, size_t displ = 0);
-	static string getIretBytes(AssemblyLine* line, size_t displ = 0);
+	static string getIretBytes(AssemblyLine* line, size_t displ = 0);	
 
 	static string getByte(uint8_t byte);
 	static string get4Bytes(int bytes);

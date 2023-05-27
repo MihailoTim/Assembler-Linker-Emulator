@@ -180,6 +180,8 @@ void SecondPass::handleBgtInstruction(AssemblyLine* line) {
 
 void SecondPass::handlePushInstruction(AssemblyLine* line) {
     std::cout << "PUSH\n";
+	string content = AssemblyInstruction::getPushBytes(line);
+    cout<<content<<endl;
     locationCounter += 4;
 }
 
@@ -276,8 +278,11 @@ void SecondPass::handleLdInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleStInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "ST\n";
+	int displ = handleStoreArgument(line->args[1]);
+	string content = AssemblyInstruction::getStoreBytes(line, displ);
+	cout<<content<<endl;
+    locationCounter += 4;
 }
 
 void SecondPass::handleCsrrdInstruction(AssemblyLine* line) {
@@ -354,8 +359,37 @@ int SecondPass::handleLoadArgument(Argument *arg){
 			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
+			if(canFitInDispl(stoi(arg->stringVal), 0))
+				return stoi(arg->stringVal);
+			else
+				cout<<"LITERAL POOL IS NEEDED\n";
+		}
+	}
+	return 0;
+}
+
+int SecondPass::handleStoreArgument(Argument *arg){
+	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
+	if(arg->addrType == AddressType::IMMED || arg->addrType == AddressType::MEMDIR){
+		if(arg->argType == ArgumentType::SYM){
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		}
+		if(arg->argType == ArgumentType::LITERAL){
 			if(canFitInDispl(arg->intVal, 0))
 				return arg->intVal;
+			else
+				cout<<"LITERAL POOL IS NEEDED\n";
+		}
+	}
+	if(arg->addrType == AddressType::REGINDOFF){
+		if(arg->argType == ArgumentType::REGPLUSSYM){
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		}
+		if(arg->argType == ArgumentType::REGPLUSLIT){
+			if(canFitInDispl(stoi(arg->stringVal), 0))
+				return stoi(arg->stringVal);
 			else
 				cout<<"LITERAL POOL IS NEEDED\n";
 		}
