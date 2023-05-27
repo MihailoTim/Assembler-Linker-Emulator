@@ -89,6 +89,9 @@ public:
         }
 
 	static int handleBranchArgument(Argument *arg);
+    static int handleCallArgument(Argument *arg);
+    static int handleLoadArgument(Argument *arg);
+    static int handleStoreArgument(Argument *arg);
 
 	static void handleGlobalDirective(AssemblyLine *line);
 	static void handleExternDirective(AssemblyLine *line);

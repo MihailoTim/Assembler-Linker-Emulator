@@ -27,6 +27,10 @@ void SecondPass::start(){
 
 void SecondPass::performLineByLine(){
 	for(auto line : file->readFile()){
+		if(line->label.size()>0){
+			SymbolTable::SymbolTableLine &stline = symbolTable->symbolTable[line->label];
+			stline.value = locationCounter;
+		}
 		if(directiveHandlers.count(line->mnemonic))
 			handleDirective(line);
 		else
@@ -61,18 +65,39 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 
 void SecondPass::handleWordDirective(AssemblyLine* line){
 	for(auto arg : line->args){
+		if(arg->argType == ArgumentType::LITERAL){
+			string content = AssemblyInstruction::get4Bytes(arg->intVal);
+			cout<<content<<endl;
+		}
+		else{
+			if(arg->argType == ArgumentType::SYM){
+				reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
+				string content = "00 00 00 00";
+				cout<<content<<endl;
+			}
+		}
 		locationCounter += 4;
 	}
 	cout<<"WORD\n";
 }
 
 void SecondPass::handleSkipDirective(AssemblyLine* line){
-	locationCounter += line->args[0]->intVal;
 	cout<<"SKIP\n";
+	string content = "";
+	for(int i=0;i<line->args[0]->intVal;i++){
+		if(i%4 == 0 && i!=0)
+			content += " ";
+		if(i%8 == 0 && i!=0)
+			content += "\n";
+		content += "00 ";
+	}
+	cout<<content<<endl;
+	locationCounter += line->args[0]->intVal;
 }
 
 void SecondPass::handleAsciiDirective(AssemblyLine* line){
 	cout<<line->args[0]->stringVal<<endl;
+	locationCounter += line->args[0]->stringVal.size();
 	cout<<"ASCII\n";
 }
 
@@ -86,29 +111,33 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
-    locationCounter += 4;
-	string content = AssemblyInstruction::getHaltBytes();
     std::cout << "HALT\n";
+	string content = AssemblyInstruction::getHaltBytes();
+    locationCounter += 4;
 }
 
 void SecondPass::handleIntInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "INT\n";
+	string content = AssemblyInstruction::getIntBytes();
+    locationCounter += 4;
 }
 
 void SecondPass::handleIretInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "IRET\n";
+    locationCounter += 4;
 }
 
 void SecondPass::handleCallInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "CALL\n";
+	int displ = handleCallArgument(line->args[0]);
+	string content = AssemblyInstruction::getCallBytes(line, displ);
+	cout<<content<<endl;
+    locationCounter += 4;
 }
 
 void SecondPass::handleRetInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "RET\n";
+    locationCounter += 4;
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
@@ -144,95 +173,98 @@ void SecondPass::handleBgtInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handlePushInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "PUSH\n";
+    locationCounter += 4;
 }
 
 void SecondPass::handlePopInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "POP\n";
+    locationCounter += 4;
 }
 
 void SecondPass::handleXchgInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "XCHG\n";
 	string content = AssemblyInstruction::getXchgBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleAddInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "ADD\n";
 	string content = AssemblyInstruction::getArithmBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleSubInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "SUB\n";
 	string content = AssemblyInstruction::getArithmBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleMulInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "MUL\n";
 	string content = AssemblyInstruction::getArithmBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleDivInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "DIV\n";
 	string content = AssemblyInstruction::getArithmBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleNotInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "NOT\n";
 	string content = AssemblyInstruction::getLogicBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleAndInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "AND\n";
 	string content = AssemblyInstruction::getLogicBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleOrInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "OR\n";
 	string content = AssemblyInstruction::getLogicBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleXorInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "XOR\n";
 	string content = AssemblyInstruction::getLogicBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleShlInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "SHL\n";
 	string content = AssemblyInstruction::getShiftBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleShrInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "SHR\n";
 	string content = AssemblyInstruction::getShiftBytes(line);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleLdInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "LD\n";
+	int displ = handleLoadArgument(line->args[0]);
+	string content = AssemblyInstruction::getLoadBytes(line, displ);
+	cout<<content<<endl;
+    locationCounter += 4;
 }
 
 void SecondPass::handleStInstruction(AssemblyLine* line) {
@@ -241,13 +273,17 @@ void SecondPass::handleStInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleCsrrdInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "CSRRD\n";
+	string content = AssemblyInstruction::getLoadBytes(line);
+	cout<<content<<endl;
+    locationCounter += 4;
 }
 
 void SecondPass::handleCsrwrInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "CSRWR\n";
+	string content = AssemblyInstruction::getLoadBytes(line);
+	cout<<content<<endl;
+    locationCounter += 4;
 }
 
 int SecondPass::handleBranchArgument(Argument *arg){
@@ -271,6 +307,50 @@ int SecondPass::handleBranchArgument(Argument *arg){
 			return arg->intVal - (locationCounter + 4);
 		else
 			cout<<"LITERAL POOL IS NEEDED\n";
+	}
+	return 0;
+}
+
+int SecondPass::handleCallArgument(Argument *arg){
+	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
+	if(arg->argType == ArgumentType::SYM){
+		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+		reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_PC32, arg->stringVal);
+	}
+	if(arg->argType == ArgumentType::LITERAL){
+		if(canFitInDispl(arg->intVal, 0))
+			return arg->intVal;
+		else
+			cout<<"LITERAL POOL IS NEEDED\n";
+	}
+	return 0;
+}
+
+int SecondPass::handleLoadArgument(Argument *arg){
+	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
+	if(arg->addrType == AddressType::IMMED || arg->addrType == AddressType::MEMDIR){
+		if(arg->argType == ArgumentType::SYM){
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		}
+		if(arg->argType == ArgumentType::LITERAL){
+			if(canFitInDispl(arg->intVal, 0))
+				return arg->intVal;
+			else
+				cout<<"LITERAL POOL IS NEEDED\n";
+		}
+	}
+	if(arg->addrType == AddressType::REGINDOFF){
+		if(arg->argType == ArgumentType::REGPLUSSYM){
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		}
+		if(arg->argType == ArgumentType::REGPLUSLIT){
+			if(canFitInDispl(arg->intVal, 0))
+				return arg->intVal;
+			else
+				cout<<"LITERAL POOL IS NEEDED\n";
+		}
 	}
 	return 0;
 }

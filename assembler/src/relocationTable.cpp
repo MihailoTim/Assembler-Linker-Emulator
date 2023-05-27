@@ -10,7 +10,7 @@ void RelocationTable::handleNewReloLine(size_t offset, RelocationType type, stri
 
 SymbolTable::SymbolTableLine RelocationTable::getSymbolToReference(string symbol){
 	SymbolTable::SymbolTableLine stline = symbolTable.symbolTable[symbol];
-	while(stline.type != SymbolTable::SymbolType::SCTN && stline.bind != SymbolTable::SymbolBind::GLOB && stline.ndx != SymbolTable::SymbolSection::UNDEFINED){
+	while(stline.type != SymbolTable::SymbolType::SCTN && stline.bind != SymbolTable::SymbolBind::GLOB && stline.num != 0){
 		string nextSymbol = symbolTable.symbolLookupTable[stline.ndx];
 		stline = symbolTable.symbolTable[nextSymbol];
 	}

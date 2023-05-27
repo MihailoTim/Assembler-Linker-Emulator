@@ -93,15 +93,15 @@ reg1X (%r1)([0-5])
     return REG; 
 }
 {status} {
-    yylval.stringVal = new string("status");
+    yylval.intVal = 0;
     return STATUS;
 }
 {handler} {
-    yylval.stringVal = new string("handler");
+    yylval.intVal = 1;
     return HANDLER;
 }
 {cause} {
-    yylval.stringVal = new string("cause");
+    yylval.intVal = 2;
     return CAUSE;
 }
 {symbol} {

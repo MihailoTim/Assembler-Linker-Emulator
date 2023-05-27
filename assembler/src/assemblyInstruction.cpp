@@ -10,6 +10,15 @@ string AssemblyInstruction::getByte(uint8_t byte){
 	return result;
 }
 
+string AssemblyInstruction::get4Bytes(int bytes){
+    uint8_t byte1 = (bytes >> 24) & 0xFF;
+    uint8_t byte2 = (bytes >> 16) & 0xFF;
+    uint8_t byte3 = (bytes >> 8) & 0xFF;
+    uint8_t byte4 = bytes & 0xFF;
+
+	return getByte(byte1) + " " + getByte(byte2)  + " " + getByte(byte3) + " " + getByte(byte4);
+}
+
 string AssemblyInstruction::get4Bytes(int byte1, int byte2, int byte3, int byte4){
 	return getByte(byte1) + " " + getByte(byte2)  + " " + getByte(byte3) + " " + getByte(byte4);
 }
@@ -22,8 +31,12 @@ string AssemblyInstruction::getIntBytes(){
 	return get4Bytes(0x10, 0, 0, 0);
 }
 
-string AssemblyInstruction::getCallBytes(AssemblyLine* line){
-	return get4Bytes(0x20, 0, 0, 0);
+string AssemblyInstruction::getCallBytes(AssemblyLine* line, size_t displ){
+	int byte1 = 0x20;
+	int byte2 = 15 << 4;
+	int byte3 = displ >> 8;
+	int byte4 = displ & 255;
+	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
 string AssemblyInstruction::getBranchBytes(AssemblyLine *line, size_t displ){
@@ -115,6 +128,59 @@ string AssemblyInstruction::getShiftBytes(AssemblyLine *line){
 	}
 
 	return get4Bytes(byte1, byte2, byte3, 0);
+}
+
+string AssemblyInstruction::getLoadBytes(AssemblyLine *line, size_t displ){
+	int byte1;
+	int byte2;
+	int byte3;
+	int byte4;
+	if(line->mnemonic == "csrrd"){
+		byte1 = 0x90;
+		byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+		byte3 = 0;
+		byte4 = 0;
+	}
+	if(line->mnemonic == "csrwr"){
+		byte1 = 0x94;
+		byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+		byte3 = 0;
+		byte4 = 0;
+	}
+	if(line->mnemonic == "ld"){
+		if(line->args[0]->addrType == AddressType::IMMED){
+			byte1 = 0x91;
+			byte2 = line->args[1]->intVal << 4;
+			byte3 = displ >> 8;
+			byte4 = displ & 255;
+			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+		if(line->args[0]->addrType == AddressType::MEMDIR){
+			byte1 = 0x92;
+			byte2 = line->args[1]->intVal << 4;
+			byte3 = displ >> 8;
+			byte4 = displ & 255;
+			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+		if(line->args[0]->addrType == AddressType::REGDIR){
+			byte1 = 0x91;
+			byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+		if(line->args[0]->addrType == AddressType::REGIND){
+			byte1 = 0x92;
+			byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+		if(line->args[0]->addrType == AddressType::REGINDOFF){
+			byte1 = 0x93;
+			byte2 = line->args[1]->intVal << 4 | line->args[0]->intVal;
+			byte3 = displ >> 8;
+			byte4 = displ & 255;
+			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+	}
+	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
 long AssemblyInstruction::getValueOf(Argument *arg){

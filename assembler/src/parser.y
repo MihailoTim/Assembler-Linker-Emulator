@@ -47,7 +47,7 @@
 %type <stringVal> line
 %type <stringVector> combinedList
 %type <stringVal> text
-%type <stringVal> csrreg
+%type <intVal> csrreg
 %type <stringVal> instruction0arg
 %type <stringVal> instruction1reg
 %type <stringVal> instruction2reg
@@ -57,6 +57,7 @@
 %type <stringVal> instructionLD
 %type <stringVal> instructionST
 %type <stringVal> instructionJMP
+%type <stringVal> instructionCALL
 %type <stringVal> expression
 %type <stringVal> operand
 %type <stringVal> branchOperand
@@ -69,9 +70,9 @@
 %token FEND 0 
 
 %token <intVal> REG
-%token <stringVal> STATUS
-%token <stringVal> HANDLER
-%token <stringVal> CAUSE
+%token <intVal> STATUS
+%token <intVal> HANDLER
+%token <intVal> CAUSE
 %token <intVal> BIN
 %token <intVal> DEC
 %token <intVal> HEX
@@ -136,14 +137,14 @@ instruction:
         currentLine->mnemonic = *($1);
     } | 
     instructionCSRRD csrreg COMMA REG {
-        currentLine->args.push_back(new Argument(0, *$2, ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
         currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
     } | 
     instructionCSRWR REG COMMA csrreg {
         currentLine->args.push_back(new Argument($2, to_string($2), ArgumentType::REGISTER, AddressType::REGDIR, false));
-        currentLine->args.push_back(new Argument(0, *$4, ArgumentType::REGISTER, AddressType::REGDIR, false));
+        currentLine->args.push_back(new Argument($4, to_string($4), ArgumentType::REGISTER, AddressType::REGDIR, false));
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
     } | 
@@ -167,6 +168,11 @@ instruction:
         currentLine->mnemonic = *($1);
     } |
     instructionJMP branchOperand{
+        currentLine->args.push_back(delayedOperand);
+        firstPass.incLocationCounter(4);
+        currentLine->mnemonic = *($1);
+    } | 
+    instructionCALL branchOperand{
         currentLine->args.push_back(delayedOperand);
         firstPass.incLocationCounter(4);
         currentLine->mnemonic = *($1);
@@ -265,6 +271,11 @@ instructionJMP:
         $$ = new string("jmp");
     }
 
+instructionCALL:
+    CALL{
+        $$ = new string("call");
+    }
+
 branchOperand:
     literal {
         delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, true);
@@ -282,7 +293,7 @@ operand:
         $$ = new string("$"+ to_string($2));
     } | 
     DOLLAR symbol{
-        delayedOperand = new Argument(0, *$2, ArgumentType::LITERAL, AddressType::IMMED, false);
+        delayedOperand = new Argument(0, *$2, ArgumentType::SYM, AddressType::IMMED, false);
         firstPass.handleSymbolReference(*$2);
         $$ = new string("$" + *($2));
     } | 
