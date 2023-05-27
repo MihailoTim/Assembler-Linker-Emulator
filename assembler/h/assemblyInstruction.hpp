@@ -7,16 +7,19 @@ using namespace std;
 
 class AssemblyInstruction{
 public:
-	static string getHaltBytes();
-	static string getIntBytes();
+	static string getHaltBytes(AssemblyLine *line, size_t displ = 0);
+	static string getIntBytes(AssemblyLine *line, size_t displ = 0);
 	static string getCallBytes(AssemblyLine* line, size_t displ = 0);
 	static string getBranchBytes(AssemblyLine* line, size_t displ = 0);
-	static string getXchgBytes(AssemblyLine* line);
-	static string getArithmBytes(AssemblyLine* line);
-	static string getLogicBytes(AssemblyLine* line);
-	static string getShiftBytes(AssemblyLine* line);
+	static string getXchgBytes(AssemblyLine* line, size_t displ = 0);
+	static string getArithmBytes(AssemblyLine* line, size_t displ = 0);
+	static string getLogicBytes(AssemblyLine* line, size_t displ = 0);
+	static string getShiftBytes(AssemblyLine* line, size_t displ = 0);
 	static string getStoreBytes(AssemblyLine* line, size_t displ = 0);
 	static string getLoadBytes(AssemblyLine* line, size_t displ = 0);
+	static string getPopBytes(AssemblyLine* line, size_t displ = 0);
+	static string getRetBytes(AssemblyLine* line, size_t displ = 0);
+	static string getIretBytes(AssemblyLine* line, size_t displ = 0);
 
 	static string getByte(uint8_t byte);
 	static string get4Bytes(int bytes);

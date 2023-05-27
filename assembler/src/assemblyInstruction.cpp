@@ -23,11 +23,11 @@ string AssemblyInstruction::get4Bytes(int byte1, int byte2, int byte3, int byte4
 	return getByte(byte1) + " " + getByte(byte2)  + " " + getByte(byte3) + " " + getByte(byte4);
 }
 
-string AssemblyInstruction::getHaltBytes(){
+string AssemblyInstruction::getHaltBytes(AssemblyLine *line, size_t displ){
 	return get4Bytes(0, 0, 0, 0);
 }
 
-string AssemblyInstruction::getIntBytes(){
+string AssemblyInstruction::getIntBytes(AssemblyLine *line, size_t displ){
 	return get4Bytes(0x10, 0, 0, 0);
 }
 
@@ -66,7 +66,7 @@ string AssemblyInstruction::getBranchBytes(AssemblyLine *line, size_t displ){
 	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
-string AssemblyInstruction::getXchgBytes(AssemblyLine *line){
+string AssemblyInstruction::getXchgBytes(AssemblyLine *line, size_t displ){
 	int byte1 = 0x40;
 	int byte2 = line->args[0]->intVal;
 	int byte3 = line->args[1]->intVal << 4;
@@ -74,7 +74,7 @@ string AssemblyInstruction::getXchgBytes(AssemblyLine *line){
 	return get4Bytes(byte1, byte2, byte3, 0);
 }
 
-string AssemblyInstruction::getArithmBytes(AssemblyLine* line){
+string AssemblyInstruction::getArithmBytes(AssemblyLine* line, size_t displ){
 	int byte1;
 	int byte2 = line->args[1]->intVal << 4 | line->args[1]->intVal;
 	int byte3 = line->args[0]->intVal << 4;
@@ -93,7 +93,7 @@ string AssemblyInstruction::getArithmBytes(AssemblyLine* line){
 	return get4Bytes(byte1, byte2, byte3, 0) ;
 }
 
-string AssemblyInstruction::getLogicBytes(AssemblyLine *line){
+string AssemblyInstruction::getLogicBytes(AssemblyLine *line, size_t displ){
 	if(line->mnemonic == "not"){
 		int byte1 = 0x60;
 		int byte2 = line->args[0]->intVal << 4 | line->args[0]->intVal;
@@ -114,7 +114,7 @@ string AssemblyInstruction::getLogicBytes(AssemblyLine *line){
 	return get4Bytes(byte1, byte2, byte3, 0) ;
 }
 
-string AssemblyInstruction::getShiftBytes(AssemblyLine *line){
+string AssemblyInstruction::getShiftBytes(AssemblyLine *line, size_t displ){
 	int byte1;
 	int byte2 = line->args[1]->intVal << 4 | line->args[1]->intVal;
 	int byte3 = line->args[0]->intVal << 4;
@@ -181,6 +181,41 @@ string AssemblyInstruction::getLoadBytes(AssemblyLine *line, size_t displ){
 		}
 	}
 	return get4Bytes(byte1, byte2, byte3, byte4);
+}
+
+string AssemblyInstruction::getPopBytes(AssemblyLine *line, size_t displ){
+	//REGIND LOAD
+	int byte1 = 0x92;
+	int byte2 = line->args[0]->intVal << 4 | 0xE;
+	int byte3 = 0;
+	int byte4 = 4;
+	return get4Bytes(byte1, byte2, byte3, byte4);
+}
+
+string AssemblyInstruction::getRetBytes(AssemblyLine *line, size_t displ){
+	//POP PC
+	int byte1 = 0x92;
+	int byte2 = 0xF << 4 | 0xE;
+	int byte3 = 0;
+	int byte4 = 4;
+	return get4Bytes(byte1, byte2, byte3, byte4);
+}
+
+string AssemblyInstruction::getIretBytes(AssemblyLine *line, size_t displ){
+	//POP PC, 
+	//CSRRD mem[sp], status, sp = sp +4	
+	int byte1 = 0x92;
+	int byte2 = 0xF << 4 | 0xE;
+	int byte3 = 0;
+	int byte4 = 4;
+	string row1 = get4Bytes(byte1, byte2, byte3, byte4);
+
+	byte1 = 0x97;
+	byte2 = 0 <<4 | 0xE;
+	byte3 = 0;
+	byte4 = 4;
+	string row2 = get4Bytes(byte1, byte2, byte3, byte4);
+	return row1 + "\n" + row2;
 }
 
 long AssemblyInstruction::getValueOf(Argument *arg){

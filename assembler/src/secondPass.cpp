@@ -112,18 +112,22 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
     std::cout << "HALT\n";
-	string content = AssemblyInstruction::getHaltBytes();
+	string content = AssemblyInstruction::getHaltBytes(line);
+	cout<<content<<endl;
     locationCounter += 4;
 }
 
 void SecondPass::handleIntInstruction(AssemblyLine* line) {
     std::cout << "INT\n";
-	string content = AssemblyInstruction::getIntBytes();
+	string content = AssemblyInstruction::getIntBytes(line);
+	cout<<content<<endl;
     locationCounter += 4;
 }
 
 void SecondPass::handleIretInstruction(AssemblyLine* line) {
     std::cout << "IRET\n";
+	string content = AssemblyInstruction::getIretBytes(line);
+	cout<<content<<endl;
     locationCounter += 4;
 }
 
@@ -137,6 +141,8 @@ void SecondPass::handleCallInstruction(AssemblyLine* line) {
 
 void SecondPass::handleRetInstruction(AssemblyLine* line) {
     std::cout << "RET\n";
+	string content = AssemblyInstruction::getRetBytes(line);
+	cout<<content<<endl;
     locationCounter += 4;
 }
 
@@ -179,6 +185,8 @@ void SecondPass::handlePushInstruction(AssemblyLine* line) {
 
 void SecondPass::handlePopInstruction(AssemblyLine* line) {
     std::cout << "POP\n";
+	string content = AssemblyInstruction::getPopBytes(line);
+	cout<<content<<endl;
     locationCounter += 4;
 }
 

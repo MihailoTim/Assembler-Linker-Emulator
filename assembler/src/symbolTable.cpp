@@ -111,6 +111,7 @@ void SymbolTable::printSymbolTable(){
 }
 
 void SymbolTable::printSectionTable(){
+	cout<<"#sectiontab"<<endl;
 	for(auto it = sectionTable.begin(); it!=sectionTable.end();it++){
 		SectionTableLine stline = it->second;
 		cout<<stline.base<<" "<<stline.length<<" "<<stline.name<<endl;
