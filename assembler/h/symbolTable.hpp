@@ -9,6 +9,10 @@ using namespace std;
 
 class SymbolTable{
 public:
+	enum SymbolSection{GLOBAL=-1, UNDEFINED=0};
+	enum SymbolBind{LOC, GLOB, UNBOUND};
+	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
+
 	static SymbolTable& getInstance(){
 		static SymbolTable instance;
 		return instance;
@@ -33,10 +37,8 @@ public:
 	void printSectionTable();
 
 	friend class SecondPass;
+	friend class RelocationTable;
 private:
-	enum SymbolSection{GLOBAL=-1, UNDEFINED=0};
-	enum SymbolBind{LOC, GLOB, UNBOUND};
-	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
 	struct SymbolTableLine{
 		size_t num;
 		size_t value;
@@ -62,19 +64,25 @@ private:
 
 	map<string, SymbolTableLine> symbolTable;
 	map<string, SectionTableLine> sectionTable;
+	map<size_t, string> symbolLookupTable;
 	size_t count;	
 	string currentSection;
 
+	SymbolTable(SymbolTable const&);
+	void operator=(SymbolTable const&);
+
+
+	SymbolTableLine* handleNewSymbol(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname);
+
+
 	SymbolTable(){
 		count=0;
-		SymbolTableLine stline = *new SymbolTableLine(count++,0,0,SymbolType::NOTYPE, SymbolBind::LOC,SymbolSection::UNDEFINED, "");
-		symbolTable.insert(make_pair("", stline));
+		SymbolTableLine *stline = handleNewSymbol(count++,0,0,SymbolType::NOTYPE, SymbolBind::LOC,SymbolSection::UNDEFINED, "");
+		symbolTable.insert(make_pair("", *stline));
 		SectionTableLine secline = *new SectionTableLine(0, 0, "", 0);
 		sectionTable.insert(make_pair("", secline));
 		currentSection = "";
 	}
-	SymbolTable(SymbolTable const&);
-	void operator=(SymbolTable const&);
 };
 
 #endif

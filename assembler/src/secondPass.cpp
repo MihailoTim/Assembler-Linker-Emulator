@@ -5,6 +5,7 @@
 string SecondPass::currentSection = "";
 size_t SecondPass::locationCounter = 0;
 SymbolTable* SecondPass::symbolTable = &SymbolTable::getInstance();
+RelocationTable* SecondPass::reloTable = new RelocationTable("");
 
 void SecondPass::performBetweenPassCheck(){
 	map<string, SymbolTable::SymbolTableLine> symTab = symbolTable->symbolTable;
@@ -53,6 +54,7 @@ void SecondPass::handleExternDirective(AssemblyLine* line){
 void SecondPass::handleSectionDirective(AssemblyLine* line){
 	cout<<locationCounter<<endl;
 	currentSection = line->args[0]->stringVal;
+	reloTable = new RelocationTable(currentSection);
 	locationCounter = 0;
 	cout<<currentSection<<endl;
 }
@@ -110,34 +112,34 @@ void SecondPass::handleRetInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     cout << "JMP\n";
 	int displ = handleBranchArgument(line->args[0]);
 	string content = AssemblyInstruction::getBranchBytes(line, displ);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBeqInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "BEQ\n";
 	int displ = handleBranchArgument(line->args[2]);
 	string content = AssemblyInstruction::getBranchBytes(line, displ);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBneInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "BNE\n";
 	int displ = handleBranchArgument(line->args[2]);
 	string content = AssemblyInstruction::getBranchBytes(line, displ);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
 void SecondPass::handleBgtInstruction(AssemblyLine* line) {
-    locationCounter += 4;
     std::cout << "BGT\n";
 	int displ = handleBranchArgument(line->args[2]);
 	string content = AssemblyInstruction::getBranchBytes(line, displ);
+    locationCounter += 4;
 	cout<<content<<endl;
 }
 
@@ -252,18 +254,23 @@ int SecondPass::handleBranchArgument(Argument *arg){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
 	if(arg->argType == ArgumentType::SYM){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-		cout<<symline.ndx<<" "<<sctline.symTabId<<endl;
-		if(sctline.symTabId == symline.ndx && canFitInDispl(symline.value, locationCounter)){
-			return symline.value - locationCounter;
+		if(sctline.symTabId == symline.ndx){
+			if(canFitInDispl(symline.value, locationCounter + 4)){
+				return symline.value - (locationCounter + 4);
+			}
+			else{
+				cout<<"LITERAL POOL IS NEEDED\n";
+			}
 		}
-		else
-			return 0;
+		else{
+			reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_PC32, arg->stringVal);
+		}
 	}
 	if(arg->argType == ArgumentType::LITERAL){
-		if(canFitInDispl(arg->intVal, locationCounter))
-			return arg->intVal, locationCounter;
+		if(canFitInDispl(arg->intVal, locationCounter + 4))
+			return arg->intVal - (locationCounter + 4);
 		else
-			return 0;
+			cout<<"LITERAL POOL IS NEEDED\n";
 	}
 	return 0;
 }

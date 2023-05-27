@@ -18,7 +18,7 @@ public:
 	static string getStoreBytes(AssemblyLine* line);
 	static string getLoadBytes(AssemblyLine* line);
 
-	static string getByte(int byte);
+	static string getByte(uint8_t byte);
 	static string get4Bytes(int byte1, int byte2, int byte3, int byte4);
 
 	static long getValueOf(Argument *arg);

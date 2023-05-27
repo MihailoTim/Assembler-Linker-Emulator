@@ -4,7 +4,7 @@ cppHeader := $(wildcard h/*.hpp)
 cppHeader := $(wildcard h/*.h)
 
 asembler: src/main.cpp
-	g++ -o asembler ${cppSource} ${cSource} ${cppHeader} ${cHeader}
+	bash build.sh
 
 
 clean: 

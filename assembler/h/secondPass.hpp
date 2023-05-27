@@ -1,6 +1,10 @@
 #include "../h/assemblyFile.hpp"
 #include "../h/symbolTable.hpp"
+#include "../h/relocationTable.hpp"
 #include <set>
+
+#define DISPL_MAX 1<<11
+#define DISPL_MIN -(1<<11)-1
 
 class SecondPass{
 public:
@@ -80,7 +84,9 @@ public:
 
     void setSymbolTable(SymbolTable *st){symbolTable = st;}
 
-    static bool canFitInDispl(size_t first, size_t second){return ((int)first - (int)second <= 2<<11) &&  ((int)first-(int)second >= - (2<<11+1));}
+    static bool canFitInDispl(size_t first, size_t second){
+        return ((int)first - (int)second <= DISPL_MAX) &&  ((int)first-(int)second >= DISPL_MIN);
+        }
 
 	static int handleBranchArgument(Argument *arg);
 
@@ -126,6 +132,7 @@ public:
 private:
 	AssemblyFile *file;
 	static SymbolTable *symbolTable;
+    static RelocationTable *reloTable;
 	PassStatus status;
 
 	static string currentSection;

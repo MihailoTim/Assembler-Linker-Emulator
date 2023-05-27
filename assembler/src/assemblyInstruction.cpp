@@ -1,11 +1,12 @@
 #include "../h/assemblyInstruction.hpp"
+#include <sstream>
+#include <iomanip>
 
-string AssemblyInstruction::getByte(int byte){
+string AssemblyInstruction::getByte(uint8_t byte){
 	string result="";
-	for(int i=0;i<8;i++){
-		result = to_string(byte & 1) + result;
-		byte>>=1;
-	}
+	std::stringstream sstream;
+	sstream << setw(2) << setfill('0') << std::hex << int(byte);
+	result = sstream.str();
 	return result;
 }
 
@@ -18,16 +19,16 @@ string AssemblyInstruction::getHaltBytes(){
 }
 
 string AssemblyInstruction::getIntBytes(){
-	return get4Bytes(16, 0, 0, 0);
+	return get4Bytes(0x10, 0, 0, 0);
 }
 
 string AssemblyInstruction::getCallBytes(AssemblyLine* line){
-	return get4Bytes(32, 0, 0, 0);
+	return get4Bytes(0x20, 0, 0, 0);
 }
 
 string AssemblyInstruction::getBranchBytes(AssemblyLine *line, size_t displ){
 	if(line->mnemonic == "jmp"){
-		int byte1 = 48;
+		int byte1 = 0x30;
 		int byte2 = 15 << 4;
 		int byte3 = displ >> 8;
 		int byte4 = displ & 255;
@@ -41,19 +42,19 @@ string AssemblyInstruction::getBranchBytes(AssemblyLine *line, size_t displ){
 
 
 	if(line->mnemonic == "beq"){
-		byte1 = 49;
+		byte1 = 0x31;
 	}
 	if(line->mnemonic == "bne"){
-		byte1 = 50;
+		byte1 = 0x32;
 	}
 	if(line->mnemonic == "bgt"){
-		byte1 = 51;
+		byte1 = 0x33;
 	}
 	return get4Bytes(byte1, byte2, byte3, byte4);
 }
 
 string AssemblyInstruction::getXchgBytes(AssemblyLine *line){
-	int byte1 = 64;
+	int byte1 = 0x40;
 	int byte2 = line->args[0]->intVal;
 	int byte3 = line->args[1]->intVal << 4;
 
@@ -65,23 +66,23 @@ string AssemblyInstruction::getArithmBytes(AssemblyLine* line){
 	int byte2 = line->args[1]->intVal << 4 | line->args[1]->intVal;
 	int byte3 = line->args[0]->intVal << 4;
 	if(line->mnemonic == "add"){
-		byte1 = 65;
+		byte1 = 0x50;
 	}
 	if(line->mnemonic == "sub"){
-		byte1 = 66;
+		byte1 = 0x51;
 	}
 	if(line->mnemonic == "mul"){
-		byte1 = 67;
+		byte1 = 0x52;
 	}
 	if(line->mnemonic == "div"){
-		byte1 = 68;
+		byte1 = 0x53;
 	}
 	return get4Bytes(byte1, byte2, byte3, 0) ;
 }
 
 string AssemblyInstruction::getLogicBytes(AssemblyLine *line){
 	if(line->mnemonic == "not"){
-		int byte1 = 96;
+		int byte1 = 0x60;
 		int byte2 = line->args[0]->intVal << 4 | line->args[0]->intVal;
 		return get4Bytes(byte1, byte2, 0, 0) ;
 	}
@@ -89,13 +90,13 @@ string AssemblyInstruction::getLogicBytes(AssemblyLine *line){
 	int byte2 = line->args[1]->intVal << 4 | line->args[1]->intVal;
 	int byte3 = line->args[0]->intVal << 4;
 	if(line->mnemonic == "and"){
-		byte1 = 97;
+		byte1 = 0x61;
 	}
 	if(line->mnemonic == "or"){
-		byte1 = 98;
+		byte1 = 0x62;
 	}
 	if(line->mnemonic == "xor"){
-		byte1 = 99;
+		byte1 = 0x63;
 	}
 	return get4Bytes(byte1, byte2, byte3, 0) ;
 }
@@ -106,11 +107,11 @@ string AssemblyInstruction::getShiftBytes(AssemblyLine *line){
 	int byte3 = line->args[0]->intVal << 4;
 
 	if(line->mnemonic == "shl"){
-		byte1 = 112;
+		byte1 = 0x70;
 	}
 	
 	if(line->mnemonic == "shr"){
-		byte1 = 113;
+		byte1 = 0x71;
 	}
 
 	return get4Bytes(byte1, byte2, byte3, 0);

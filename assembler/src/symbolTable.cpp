@@ -8,7 +8,7 @@ void SymbolTable::handleGlobalDirective(string symbol){
 		stline.global = true;
 	}
 	else{
-		SymbolTableLine *stline = new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, SymbolSection::GLOBAL, symbol);
+		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, SymbolSection::GLOBAL, symbol);
 		stline->global = true;
 		symbolTable.insert(make_pair(symbol, *stline));
 	}
@@ -19,7 +19,7 @@ void SymbolTable::handleExternDirective(string symbol){
 		throw new Exception("Multiple definitions of symbol " + symbol);
 	}
 	else{
-		SymbolTableLine *stline = new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::GLOB, SymbolSection::UNDEFINED, symbol);
+		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::GLOB, SymbolSection::UNDEFINED, symbol);
 		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
@@ -35,8 +35,8 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 		SectionTableLine newSctLine = *new SectionTableLine(0, 0, symbol, this->count);
 		sectionTable.insert(make_pair(symbol, newSctLine));
 		int num = this->count++;
-		SymbolTableLine stline = *new SymbolTableLine(num, 0, 0,SymbolType::SCTN, SymbolBind::LOC, num, symbol);
-		symbolTable.insert(make_pair(symbol, stline));
+		SymbolTableLine *stline = handleNewSymbol(num, 0, 0,SymbolType::SCTN, SymbolBind::LOC, num, symbol);
+		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
 
@@ -56,8 +56,8 @@ void SymbolTable::handleEquDirective(string symbol, size_t locationCounter){
 		}
 	}
 	else{
-		SymbolTableLine stline = *new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
-		symbolTable.insert(make_pair(symbol, stline));
+		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
+		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
 
@@ -85,23 +85,28 @@ void SymbolTable::handleLabel(string symbol, size_t locationCounter){
 		}
 	}
 	else{
-		SymbolTableLine stline = *new SymbolTableLine(this->count++, locationCounter, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
-		symbolTable.insert(make_pair(symbol, stline));
+		SymbolTableLine *stline = handleNewSymbol(this->count++, locationCounter, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
+		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
 
 void SymbolTable::handleSymbolReference(string symbol, size_t locationCounter){
 	SymbolTableLine section = symbolTable[currentSection];
 	if(symbolTable.count(symbol) == 0){
-		SymbolTableLine stline = *new SymbolTableLine(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, section.num, symbol);
-		symbolTable.insert(make_pair(symbol, stline));
+		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::UNBOUND, section.num, symbol);
+		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
 
 void SymbolTable::printSymbolTable(){
+	cout<<"#symbtab"<<endl;
 	for(auto it = symbolTable.begin(); it!=symbolTable.end();it++){
 		SymbolTableLine stline = it->second;
 		cout<<stline.num<<" "<<stline.value<<" "<<stline.size<<" "<<stline.type<<" "<<stline.bind<<" "<<stline.ndx<<" "<<stline.name<<endl;
+	}
+	cout<<"#lookuptab"<<endl;
+	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
+		cout<<it->first<<" " <<it->second<<endl;
 	}
 }
 
@@ -110,4 +115,9 @@ void SymbolTable::printSectionTable(){
 		SectionTableLine stline = it->second;
 		cout<<stline.base<<" "<<stline.length<<" "<<stline.name<<endl;
 	}
+}
+
+SymbolTable::SymbolTableLine* SymbolTable::handleNewSymbol(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname){
+	symbolLookupTable.insert(make_pair(n, sname));
+	return new SymbolTableLine(n, v, s, st, sb, ind, sname);
 }
