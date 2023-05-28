@@ -5,6 +5,9 @@
 
 using namespace std;
 
+#ifndef _RELOCATION_TABLE_H
+#define _RELOCATION_TABLE_H
+
 
 class RelocationTable{
 public:
@@ -27,7 +30,7 @@ private:
 
 	RelocationTable(string sctn) : count(0), symbolTable(SymbolTable::getInstance()), section(sctn){}
 
-	void handleNewReloLine(size_t offset, RelocationType type, string symbol);
+	string handleNewReloLine(size_t offset, RelocationType type, string symbol);
 
 	SymbolTable::SymbolTableLine getSymbolToReference(string symbol);
 	
@@ -36,3 +39,5 @@ private:
 	string section;
 	size_t count;
 };
+
+#endif

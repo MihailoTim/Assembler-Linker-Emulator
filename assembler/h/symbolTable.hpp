@@ -36,6 +36,10 @@ public:
 
 	void printSectionTable();
 
+	void printSection(string section);
+
+	void printAllSections();
+
 	friend class SecondPass;
 	friend class RelocationTable;
 private:
@@ -57,6 +61,7 @@ private:
 		size_t length;
 		string name;
 		string content;
+		vector<string> reloTable;
 		size_t symTabId;
 		SectionTableLine(){}
 		SectionTableLine(size_t b, size_t l, string n, size_t stid): base(b), length(l), name(n), symTabId(stid){}
@@ -73,7 +78,6 @@ private:
 
 
 	SymbolTableLine* handleNewSymbol(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname);
-
 
 	SymbolTable(){
 		count=0;

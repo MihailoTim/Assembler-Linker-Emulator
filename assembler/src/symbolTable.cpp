@@ -56,7 +56,7 @@ void SymbolTable::handleEquDirective(string symbol, size_t locationCounter){
 		}
 	}
 	else{
-		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
+		SymbolTableLine *stline = handleNewSymbol(this->count++, locationCounter, 0,SymbolType::NOTYPE, SymbolBind::LOC, section.num, symbol);
 		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
@@ -100,8 +100,8 @@ void SymbolTable::handleSymbolReference(string symbol, size_t locationCounter){
 
 void SymbolTable::printSymbolTable(){
 	cout<<"#symbtab"<<endl;
-	for(auto it = symbolTable.begin(); it!=symbolTable.end();it++){
-		SymbolTableLine stline = it->second;
+	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
+		SymbolTableLine stline = symbolTable[it->second];
 		cout<<stline.num<<" "<<stline.value<<" "<<stline.size<<" "<<stline.type<<" "<<stline.bind<<" "<<stline.ndx<<" "<<stline.name<<endl;
 	}
 	cout<<"#lookuptab"<<endl;
@@ -121,4 +121,34 @@ void SymbolTable::printSectionTable(){
 SymbolTable::SymbolTableLine* SymbolTable::handleNewSymbol(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname){
 	symbolLookupTable.insert(make_pair(n, sname));
 	return new SymbolTableLine(n, v, s, st, sb, ind, sname);
+}
+
+void SymbolTable::printSection(string section){
+	SectionTableLine sctnline = sectionTable[section];
+	string res = "";
+	res += "#" + sctnline.name + "\n";
+	for(int i=0;i<sctnline.content.size();i++){
+		if(i%2 == 0 && i!=0){
+			res+=" ";
+		}
+		if(i%8 == 0 && i!=0){
+			res+=" ";
+		}
+		if(i%16 == 0 && i!=0){
+			res+="\n";
+		}
+		res+=sctnline.content[i];
+	}
+
+	res += "\n#.rela." + sctnline.name + "\n";
+	for(int i=0;i<sctnline.reloTable.size();i++){
+		res += sctnline.reloTable[i] + "\n";
+	}
+	cout<<res<<endl;
+}
+
+void SymbolTable::printAllSections(){
+	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
+		printSection(it->first);
+	}
 }

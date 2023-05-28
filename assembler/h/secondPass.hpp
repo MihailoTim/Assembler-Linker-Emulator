@@ -3,6 +3,9 @@
 #include "../h/relocationTable.hpp"
 #include <set>
 
+#ifndef _SECOND_PASS_H
+#define _SECOND_PASS_H
+
 #define DISPL_MAX 1<<11
 #define DISPL_MIN -(1<<11)-1
 
@@ -129,6 +132,10 @@ public:
     static void handleCsrrdInstruction(AssemblyLine* line);
     static void handleCsrwrInstruction(AssemblyLine* line);
 
+    static void writeContentToSection(string content);
+
+    static void writeReloContentToSection(string content);
+
 	inline PassStatus getStatus(){return status;}
 
 	inline void setStatus(PassStatus s){status = s;}
@@ -140,8 +147,12 @@ private:
 
 	static string currentSection;
 	static size_t locationCounter;
+    static vector<string> reloTableContent;
+    static string sectionContent;
 
 	SecondPass(){}
 	SecondPass(SecondPass const&);
 	void operator=(SecondPass const&);
 };
+
+#endif

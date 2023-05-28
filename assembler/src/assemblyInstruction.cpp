@@ -16,11 +16,11 @@ string AssemblyInstruction::get4Bytes(int bytes){
     uint8_t byte3 = (bytes >> 8) & 0xFF;
     uint8_t byte4 = bytes & 0xFF;
 
-	return getByte(byte1) + " " + getByte(byte2)  + " " + getByte(byte3) + " " + getByte(byte4);
+	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
 }
 
 string AssemblyInstruction::get4Bytes(int byte1, int byte2, int byte3, int byte4){
-	return getByte(byte1) + " " + getByte(byte2)  + " " + getByte(byte3) + " " + getByte(byte4);
+	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
 }
 
 string AssemblyInstruction::getHaltBytes(AssemblyLine *line, size_t displ){
@@ -216,7 +216,7 @@ string AssemblyInstruction::getStoreBytes(AssemblyLine *line, size_t displ){
 		return get4Bytes(byte1, byte2, byte3, byte4);
 	}
 	if(line->args[1]->addrType == AddressType::REGINDOFF){
-		byte1 = 0x80;
+		byte1 = 0x81;
 		byte2 = line->args[1]->intVal << 4 | 0;
 		byte3 = line->args[0]->intVal << 4 | displ >> 8;
 		byte4 = displ & 255;
@@ -266,7 +266,7 @@ string AssemblyInstruction::getIretBytes(AssemblyLine *line, size_t displ){
 	byte3 = 0;
 	byte4 = 4;
 	string row2 = get4Bytes(byte1, byte2, byte3, byte4);
-	return row1 + "\n" + row2;
+	return row1 + row2;
 }
 
 long AssemblyInstruction::getValueOf(Argument *arg){

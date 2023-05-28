@@ -28,7 +28,7 @@ public:
 
 	inline void handleAsciiDirective(string str){}
 
-	inline void handleEquDirective(string symbol){symbolTable.handleEquDirective(symbol, locationCounter);}
+	inline void handleEquDirective(string symbol){symbolTable.handleEquDirective(symbol, locationCounter);locationCounter+=4;}
 
 	inline void handleLabel(string symbol){symbolTable.handleLabel(symbol, locationCounter);}
 
