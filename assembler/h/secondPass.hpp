@@ -6,8 +6,8 @@
 #ifndef _SECOND_PASS_H
 #define _SECOND_PASS_H
 
-#define DISPL_MAX 1<<11
-#define DISPL_MIN -(1<<11)-1
+#define DISPL_MAX (1<<11)-1
+#define DISPL_MIN -(1<<11)
 
 class SecondPass{
 public:
@@ -91,7 +91,7 @@ public:
         return ((int)first - (int)second <= DISPL_MAX) &&  ((int)first-(int)second >= DISPL_MIN);
         }
 
-	static int handleBranchArgument(Argument *arg);
+	static int handleBranchArgument(Argument *arg, bool &useDispl);
     static int handleCallArgument(Argument *arg);
     static int handleLoadArgument(Argument *arg);
     static int handleStoreArgument(Argument *arg);

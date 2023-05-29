@@ -10,7 +10,7 @@ public:
 	static string getHaltBytes(AssemblyLine *line, size_t displ = 0);
 	static string getIntBytes(AssemblyLine *line, size_t displ = 0);
 	static string getCallBytes(AssemblyLine* line, size_t displ = 0);
-	static string getBranchBytes(AssemblyLine* line, size_t displ = 0);
+	static string getBranchBytes(AssemblyLine* line, size_t displ = 0, bool useDispl = false);
 	static string getXchgBytes(AssemblyLine* line, size_t displ = 0);
 	static string getArithmBytes(AssemblyLine* line, size_t displ = 0);
 	static string getLogicBytes(AssemblyLine* line, size_t displ = 0);

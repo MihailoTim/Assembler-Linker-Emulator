@@ -12,6 +12,7 @@ using namespace std;
 class RelocationTable{
 public:
 	friend class SecondPass;
+	friend class LiteralPool;
 private:
 	struct RelocationTableLine{
 		enum RelocationType{R_32, R_PC32};
@@ -28,14 +29,18 @@ private:
 
 	using RelocationType = RelocationTable::RelocationTableLine::RelocationType;
 
-	RelocationTable(string sctn) : count(0), symbolTable(SymbolTable::getInstance()), section(sctn){}
+	RelocationTable(string sctn) : count(0), symbolTable(SymbolTable::getInstance()), section(sctn){
+		reloTable.clear();
+	}
 
-	string handleNewReloLine(size_t offset, RelocationType type, string symbol);
+	RelocationTableLine* handleNewReloLine(size_t offset, RelocationType type, string symbol);
+
+	vector<string> getContent();
 
 	SymbolTable::SymbolTableLine getSymbolToReference(string symbol);
 	
 	SymbolTable &symbolTable;
-	vector<RelocationTableLine> reloTable;
+	map<size_t, RelocationTableLine*> reloTable;
 	string section;
 	size_t count;
 };

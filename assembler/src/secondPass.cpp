@@ -2,6 +2,7 @@
 #include "../h/assemblyInstruction.hpp"
 #include <map>
 #include "../h/secondPass.hpp"
+#include "../h/literalPool.hpp"
 
 string SecondPass::currentSection = "";
 size_t SecondPass::locationCounter = 0;
@@ -61,7 +62,8 @@ void SecondPass::handleExternDirective(AssemblyLine* line){
 void SecondPass::handleSectionDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
-	sctnline.reloTable = reloTableContent;
+	LiteralPool::printLiteralPool();
+	sctnline.reloTable = reloTable->getContent();
 	currentSection = line->args[0]->stringVal;
 	reloTable = new RelocationTable(currentSection);
 	sectionContent = "";
@@ -77,8 +79,7 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 		}
 		else{
 			if(arg->argType == ArgumentType::SYM){
-				string reloContent = reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
-				writeReloContentToSection(reloContent);
+				reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
 				string content = "00 00 00 00";
 				writeContentToSection(content);
 			}
@@ -88,14 +89,12 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleSkipDirective(AssemblyLine* line){
+	cout<<"SKIP"<<endl;
 	string content = "";
 	for(int i=0;i<line->args[0]->intVal;i++){
-		if(i%4 == 0 && i!=0)
-			content += " ";
-		if(i%8 == 0 && i!=0)
-			content += "\n";
-		content += "00 ";
+		content += "00";
 	}
+	cout<<content<<endl;
 	writeContentToSection(content);
 	locationCounter += line->args[0]->intVal;
 }
@@ -111,8 +110,9 @@ void SecondPass::handleEquDirective(AssemblyLine* line){
 void SecondPass::handleEndDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
-	sctnline.reloTable = reloTableContent;
+	sctnline.reloTable = reloTable->getContent();
 	symbolTable->printAllSections();
+	LiteralPool::printLiteralPool();
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
@@ -147,29 +147,41 @@ void SecondPass::handleRetInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
-	int displ = handleBranchArgument(line->args[0]);
-	string content = AssemblyInstruction::getBranchBytes(line, displ);
+	cout<<"JMP"<<endl;
+	bool useDispl = false;
+	int displ = handleBranchArgument(line->args[0], useDispl);
+	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
+	cout<<content<<endl;
     locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBeqInstruction(AssemblyLine* line) {
-	int displ = handleBranchArgument(line->args[2]);
-	string content = AssemblyInstruction::getBranchBytes(line, displ);
+	cout<<"BEQ"<<endl;
+	bool useDispl = false;
+	int displ = handleBranchArgument(line->args[2], useDispl);
+	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
+	cout<<content<<endl;
     locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBneInstruction(AssemblyLine* line) {
-	int displ = handleBranchArgument(line->args[2]);
-	string content = AssemblyInstruction::getBranchBytes(line, displ);
+	cout<<"BNE"<<endl;
+	bool useDispl = false;
+	int displ = handleBranchArgument(line->args[2], useDispl);
+	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
+	cout<<content<<endl;
     locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBgtInstruction(AssemblyLine* line) {
-	int displ = handleBranchArgument(line->args[2]);
-	string content = AssemblyInstruction::getBranchBytes(line, displ);
+	cout<<"BGT"<<endl;
+	bool useDispl = false;
+	int displ = handleBranchArgument(line->args[2], useDispl);
+	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
+	cout<<content<<endl;
     locationCounter += 4;
 	writeContentToSection(content);
 }
@@ -253,15 +265,19 @@ void SecondPass::handleShrInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleLdInstruction(AssemblyLine* line) {
+	cout<<"LD"<<endl;
 	int displ = handleLoadArgument(line->args[0]);
 	string content = AssemblyInstruction::getLoadBytes(line, displ);
+	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    locationCounter += content.size()/2;
 }
 
 void SecondPass::handleStInstruction(AssemblyLine* line) {
+	cout<<"ST"<<endl;
 	int displ = handleStoreArgument(line->args[1]);
 	string content = AssemblyInstruction::getStoreBytes(line, displ);
+	cout<<content<<endl;
 	writeContentToSection(content);
     locationCounter += 4;
 }
@@ -278,7 +294,7 @@ void SecondPass::handleCsrwrInstruction(AssemblyLine* line) {
     locationCounter += 4;
 }
 
-int SecondPass::handleBranchArgument(Argument *arg){
+int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
 	if(arg->argType == ArgumentType::SYM){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
@@ -286,20 +302,12 @@ int SecondPass::handleBranchArgument(Argument *arg){
 			if(canFitInDispl(symline.value, locationCounter + 4)){
 				return symline.value - (locationCounter + 4);
 			}
-			else{
-				cout<<"LITERAL POOL IS NEEDED\n";
-			}
 		}
-		else{
-			string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_PC32, arg->stringVal);
-			writeReloContentToSection(content);
-		}
+		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
-		if(canFitInDispl(arg->intVal, locationCounter + 4))
-			return arg->intVal - (locationCounter + 4);
-		else
-			cout<<"LITERAL POOL IS NEEDED\n";
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
 	}
 	return 0;
 }
@@ -308,44 +316,38 @@ int SecondPass::handleCallArgument(Argument *arg){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
 	if(arg->argType == ArgumentType::SYM){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-		string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_PC32, arg->stringVal);
-		writeReloContentToSection(content);
+		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
-		if(canFitInDispl(arg->intVal, 0))
-			return arg->intVal;
-		else
-			cout<<"LITERAL POOL IS NEEDED\n";
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
 	}
 	return 0;
 }
 
 int SecondPass::handleLoadArgument(Argument *arg){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
-	if(arg->addrType == AddressType::IMMED || arg->addrType == AddressType::MEMDIR){
+	if(arg->addrType == IMMED || arg->addrType == MEMDIR){
 		if(arg->argType == ArgumentType::SYM){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			writeReloContentToSection(content);
+			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
 		}
 		if(arg->argType == ArgumentType::LITERAL){
-			if(canFitInDispl(arg->intVal, 0))
-				return arg->intVal;
-			else
-				cout<<"LITERAL POOL IS NEEDED\n";
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
 		}
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			writeReloContentToSection(content);
+			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			// string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+			// writeReloContentToSection(content);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
 				return stoi(arg->stringVal);
 			else
-				cout<<"LITERAL POOL IS NEEDED\n";
+				throw new Exception("Displacement can't fit in instruction");
 		}
 	}
 	return 0;
@@ -353,30 +355,27 @@ int SecondPass::handleLoadArgument(Argument *arg){
 
 int SecondPass::handleStoreArgument(Argument *arg){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
-	if(arg->addrType == AddressType::IMMED || arg->addrType == AddressType::MEMDIR){
+	if(arg->addrType == IMMED || arg->addrType == MEMDIR){
 		if(arg->argType == ArgumentType::SYM){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			writeReloContentToSection(content);
+			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
 		}
 		if(arg->argType == ArgumentType::LITERAL){
-			if(canFitInDispl(arg->intVal, 0))
-				return arg->intVal;
-			else
-				cout<<"LITERAL POOL IS NEEDED\n";
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
 		}
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			writeReloContentToSection(content);
+			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			// string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+			// writeReloContentToSection(content);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
 				return stoi(arg->stringVal);
 			else
-				cout<<"LITERAL POOL IS NEEDED\n";
+				throw new Exception("Displacement can't fit in instruction");
 		}
 	}
 	return 0;
@@ -388,5 +387,5 @@ void SecondPass::writeContentToSection(string content){
 
 void SecondPass::writeReloContentToSection(string content)
 {
-	reloTableContent.push_back(content);
+	// reloTableContent.push_back(content);
 }
