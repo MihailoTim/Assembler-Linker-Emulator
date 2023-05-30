@@ -32,13 +32,17 @@ void SecondPass::start(){
 
 void SecondPass::performLineByLine(){
 	for(auto line : file->readFile()){
+		locationCounter = sectionContent.size() / 2;
 		if(directiveHandlers.count(line->mnemonic))
 			handleDirective(line);
 		else
 			if(instructionHandlers.count(line->mnemonic))
 				handleInstruction(line);	
 		LiteralPool::conditionalDumpPool(sectionContent, locationCounter, previousLocationCounter);
-		previousLocationCounter = locationCounter;
+		locationCounter = sectionContent.size()/2;
+		if(line->mnemonic.size()){
+			previousLocationCounter = locationCounter;
+		}
 	}
 }
 
@@ -62,7 +66,8 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
 	LiteralPool::printLiteralPool();
-	string poolContent = LiteralPool::dumpPool(sctnline.content, locationCounter);
+	LiteralPool::dumpPool(sctnline.content, locationCounter);
+	sctnline.length = locationCounter - sctnline.base;
 	LiteralPool::changeSection();
 	sctnline.reloTable = reloTable->getContent();
 	currentSection = line->args[0]->stringVal;
@@ -86,7 +91,7 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 				writeContentToSection(content);
 			}
 		}
-		locationCounter += 4;
+		//locationCounter += 4;
 	}
 }
 
@@ -107,38 +112,36 @@ void SecondPass::handleAsciiDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleEquDirective(AssemblyLine* line){
+	cout<<"EQU\n"<<endl;
 }
 
 void SecondPass::handleEndDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
-	string poolContent = LiteralPool::dumpPool(sctnline.content, locationCounter);
+	LiteralPool::dumpPool(sctnline.content, locationCounter);
+	sctnline.length = locationCounter - sctnline.base;
 	sctnline.reloTable = reloTable->getContent();
 	symbolTable->printAllSections();
-	for(auto it=reloTable->reloTable.begin(); it!=reloTable->reloTable.end();it++){
-		cout<<it->first <<": ";
-		it->second->printReloTableLine();
-		cout<<endl;
-	}
-	// symbolTable->printSymbolTable();
+	symbolTable->printSymbolTable();
+	symbolTable->printSectionTable();
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getHaltBytes(line);
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleIntInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getIntBytes(line);
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleIretInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getIretBytes(line);
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleCallInstruction(AssemblyLine* line) {
@@ -147,13 +150,15 @@ void SecondPass::handleCallInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getCallBytes(line, displ);
 	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleRetInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getRetBytes(line);
+	cout<<locationCounter<<": RET"<<endl;
+	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
@@ -162,7 +167,7 @@ void SecondPass::handleJmpInstruction(AssemblyLine* line) {
 	int displ = handleBranchArgument(line->args[0], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
 	cout<<content<<endl;
-    locationCounter += 4;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
@@ -172,7 +177,7 @@ void SecondPass::handleBeqInstruction(AssemblyLine* line) {
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
 	cout<<content<<endl;
-    locationCounter += 4;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
@@ -182,7 +187,7 @@ void SecondPass::handleBneInstruction(AssemblyLine* line) {
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
 	cout<<content<<endl;
-    locationCounter += 4;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
@@ -192,90 +197,116 @@ void SecondPass::handleBgtInstruction(AssemblyLine* line) {
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
 	cout<<content<<endl;
-    locationCounter += 4;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handlePushInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getPushBytes(line);
+	cout<<locationCounter<<": PUSH"<<endl;
+	cout<<content<<endl;
     writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handlePopInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getPopBytes(line);
+	cout<<locationCounter<<": POP"<<endl;
+	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleXchgInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getXchgBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": XCHG"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleAddInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": ADD"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleSubInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": SUB"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleMulInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": MUL"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleDivInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": DIV"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleNotInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": NOT"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleAndInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": AND"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleOrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": OR"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleXorInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": XOR"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleShlInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getShiftBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": SHL"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleShrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getShiftBytes(line);
-    locationCounter += 4;
+	cout<<locationCounter<<": SHR"<<endl;
+	cout<<content<<endl;
+    //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleLdInstruction(AssemblyLine* line) {
-	cout<<"LD"<<endl;
+	cout<<locationCounter<<": LD"<<endl;
 	int displ = handleLoadArgument(line->args[0]);
 	string content = AssemblyInstruction::getLoadBytes(line, displ);
 	cout<<content<<endl;
@@ -284,24 +315,28 @@ void SecondPass::handleLdInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleStInstruction(AssemblyLine* line) {
-	cout<<"ST"<<endl;
+	cout<<locationCounter<<": ST"<<endl;
 	int displ = handleStoreArgument(line->args[1]);
 	string content = AssemblyInstruction::getStoreBytes(line, displ);
 	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleCsrrdInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLoadBytes(line);
+	cout<<locationCounter<<": CSRRD"<<endl;
+	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 void SecondPass::handleCsrwrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLoadBytes(line);
+	cout<<locationCounter<<": CSRWR"<<endl;
+	cout<<content<<endl;
 	writeContentToSection(content);
-    locationCounter += 4;
+    //locationCounter += 4;
 }
 
 int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
@@ -310,6 +345,9 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		if(sctline.symTabId == symline.ndx){
 			if(canFitInDispl(symline.value, locationCounter + 4)){
+				if((int)symline.value - ((int)locationCounter + 4) > 0){
+					LiteralPool::handleForwardBranch(locationCounter+2, symline.value - (locationCounter + 4));
+				}
 				return symline.value - (locationCounter + 4);
 			}
 		}

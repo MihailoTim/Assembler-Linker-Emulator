@@ -484,7 +484,17 @@ expression:
     literal {
         delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false);
         $$ = new string(to_string($1));
-    }
+    } | 
+    expression PLUS symbol{
+
+    } | 
+    expression PLUS literal{
+
+    } |
+    expression MINUS symbol{
+         
+    } |
+    expression MINUS literal{}
 
 comment:
     COMMENT{

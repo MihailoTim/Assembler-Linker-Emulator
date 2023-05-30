@@ -3,6 +3,8 @@
 #include "../h/relocationTable.hpp"
 using namespace std;
 
+#ifndef _LITERAL_POOL_H
+#define _LITERAL_POOL_H
 
 class LiteralPool{
 	struct LiteralPoolEntry{
@@ -13,9 +15,11 @@ class LiteralPool{
 	};
 public:
 
-	static const size_t MAX_POOL_DISPLACEMENT = 1<<5;
+	static const size_t MAX_POOL_DISPLACEMENT = 1<<8;
 
 	static map<size_t, LiteralPoolEntry*> literalPool;
+
+	static map<size_t, size_t> forwardBranches;
 
 	static size_t startAddress;
 
@@ -27,11 +31,19 @@ public:
 
 	static void printLiteralPool();
 
-	static string getLiteralPoolSkipInstruction();
+	static void handleForwardBranch(size_t locationCounter, size_t oldValue){forwardBranches.insert(make_pair(locationCounter, oldValue));}
+
+	static string getLiteralPoolSkipInstruction(size_t delta);
 
 	static inline void changeSection(){currentAddend = 0;}
 
-	static string dumpPool(string &content, size_t &locationCounter);
+	static void updateSymbolTable(size_t startingPoint);
 
-	static string conditionalDumpPool(string &content, size_t &locationCounter, size_t &previousLocationCounter);
+	static void updateForwardBranches(string &content, size_t startingPoint);
+
+	static void dumpPool(string &content, size_t &locationCounter);
+
+	static void conditionalDumpPool(string &content, size_t &locationCounter, size_t &previousLocationCounter);
 };
+
+#endif
