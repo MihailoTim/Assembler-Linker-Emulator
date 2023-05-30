@@ -23,7 +23,7 @@ private:
 		RelocationTableLine(size_t o, RelocationType rt, size_t s, long a): offset(o), type(rt), symbol(s), addend(a){}
 
 		void printReloTableLine(){
-			cout<< hex << (type == R_32 ? "R_32" : "R_PC32") << symbol << " " << addend;
+			cout << offset << " " << (type == R_32 ? "R_32" : "R_PC32") <<" " << symbol << " " << addend;
 		}
 	};
 

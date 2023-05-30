@@ -42,6 +42,7 @@ public:
 
 	friend class SecondPass;
 	friend class RelocationTable;
+	friend class LiteralPool;
 private:
 	struct SymbolTableLine{
 		size_t num;

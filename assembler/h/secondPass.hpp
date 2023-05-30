@@ -139,6 +139,8 @@ public:
 	inline PassStatus getStatus(){return status;}
 
 	inline void setStatus(PassStatus s){status = s;}
+
+    friend class LiteralPool;
 private:
 	AssemblyFile *file;
 	static SymbolTable *symbolTable;
@@ -147,6 +149,7 @@ private:
 
 	static string currentSection;
 	static size_t locationCounter;
+    static size_t previousLocationCounter;
     static vector<string> reloTableContent;
     static string sectionContent;
 

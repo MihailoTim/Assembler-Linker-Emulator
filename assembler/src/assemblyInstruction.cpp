@@ -248,14 +248,14 @@ string AssemblyInstruction::getIretBytes(AssemblyLine *line, size_t displ){
 	//0x93, ld pc, sp += 8
 	//POP PC, 
 	//CSRRD mem[sp], status, sp = sp +4	
-	int byte1 = 0x92;
-	int byte2 = 0xF << 4 | 0xE;
+	int byte1 = 0x96;
+	int byte2 = 0 << 4 | 0xE;
 	int byte3 = 0;
 	int byte4 = 4;
 	string row1 = get4Bytes(byte1, byte2, byte3, byte4);
 
-	byte1 = 0x97;
-	byte2 = 0 <<4 | 0xE;
+	byte1 = 0x93;
+	byte2 = 0xF <<4 | 0xE;
 	byte3 = 0;
 	byte4 = 4;
 	string row2 = get4Bytes(byte1, byte2, byte3, byte4);
