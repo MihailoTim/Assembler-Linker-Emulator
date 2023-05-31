@@ -4,15 +4,15 @@ init:
 not %r1 # r1 = -1
 sub %r1, %r2 # r2 = 1
 add %r2, %r3 # r3 = 1
-add %r2, %r4 
-add %r0, %r5
 shl %r3, %r3 # r3 = 2
-shl %r3, %r3 # r3 = 8
-start:
-sub %r2, %r3
-add %r4, %r5
-beq %r3, %r0, end
-int
-end:
+push %r3
+call function
+pop %r6
 halt
+function:
+not %r7 # r1 = -1
+sub %r7, %r8 # r2 = 1
+add %r8, %r9 # r3 = 1
+shl %r9, %r9 # r3 = 2
+ret
 .end

@@ -363,7 +363,6 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 int SecondPass::handleCallArgument(Argument *arg){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
 	if(arg->argType == ArgumentType::SYM){
-		cout<<"LOCATION COUNTER: "<<locationCounter<<endl;
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);

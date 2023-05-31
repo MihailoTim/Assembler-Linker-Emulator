@@ -97,11 +97,13 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	executePush(pc);
 
     if(bytes[0] == 0x20){
+		cout<<reg1<< " "<<reg2<<" "<<displ;
 		pc = reg1 + reg2 + displ;
 		cout<<"CALL TO: "<<pc<<endl;
 		return 0;
 	}
 	if(bytes[0] == 0x21){
+		cout<<reg1<< " "<<reg2<<" "<<displ;
 		pc = Memory::read4Bytes(reg1 + reg2 + displ);
 		cout<<"CALL TO: "<<pc<<endl;
 		return 0;
@@ -211,7 +213,12 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 			cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
-		case 0x93 : cout<<"LD\n"; reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x93 :{
+			cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
+			cout<<"POP\n"<< " "<<sp<<endl;
+			cout<<"LD\n"; reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+
+		} 
 		case 0x94 : cout<<"CSRWR\n"; sreg1 = reg2; break;
 		case 0x95 : cout<<"SET CSR\n"; sreg1 = sreg2 | displ; break;
 		case 0x96 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
@@ -233,7 +240,10 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
 			cout<<reg1<<" "<<reg3<<" "<<displ<<endl;
 			reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
 		}
-		case 0x82 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
+		case 0x82 : {
+			cout<<reg1<<" "<<reg2<<" "<<reg3<<" "<<displ<<endl;
+			Memory::write4Bytes(Memory::read4Bytes(reg1+reg2+displ), reg3); break;
+		}
 		default: return CAUSE_OPCODE;
 	}
 	cout<<"STORE"<<endl;

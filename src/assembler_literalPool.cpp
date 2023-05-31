@@ -82,7 +82,7 @@ void LiteralPool::updateForwardBranches(string &content, size_t startingPoint){
 
 
 void LiteralPool::conditionalDumpPool(string &content, size_t &newLocationCounter, size_t &previousLocationCounter){
-	if(literalPool.size() > 0 && newLocationCounter - literalPool.begin()->first > MAX_POOL_DISPLACEMENT){
+	if(literalPool.size() > 0 && int(newLocationCounter - literalPool.begin()->first) > int(MAX_POOL_DISPLACEMENT)){
 		string addend = content.substr(previousLocationCounter*2);
 		content = content.substr(0,previousLocationCounter*2);
 		size_t remeberedLC = previousLocationCounter;

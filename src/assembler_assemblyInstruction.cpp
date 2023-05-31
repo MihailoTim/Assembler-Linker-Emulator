@@ -236,7 +236,7 @@ string AssemblyInstruction::getPushBytes(AssemblyLine *line, size_t displ){
 
 string AssemblyInstruction::getRetBytes(AssemblyLine *line, size_t displ){
 	//POP PC
-	int byte1 = 0x92;
+	int byte1 = 0x93;
 	int byte2 = 0xF << 4 | 0xE;
 	int byte3 = 0;
 	int byte4 = 4;
