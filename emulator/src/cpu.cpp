@@ -26,8 +26,8 @@ void CPU::emulate(size_t startdAddr){
 			cout<<hex<<setw(2)<<setfill('0')<<int(byte)<<" ";
 		}
 		cout<<endl;
-		ret = emulateInstruction(line);
 		pc+=4;
+		ret = emulateInstruction(line);
 	}
 }
 
@@ -41,6 +41,8 @@ size_t CPU::emulateInstruction(vector<uint8_t> bytes){
 		case 0x5 : return emulateArithmetic(bytes);
 		case 0x6 : return emulateLogic(bytes);
 		case 0x7 : return emulateShift(bytes);
+		case 0x8 : return emulateSt(bytes);
+		case 0x9 : return emulateLd(bytes);
 	}
 	return 0;
 }
@@ -70,7 +72,8 @@ size_t CPU::emulateIret(const vector<uint8_t>& bytes) {
 size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	size_t reg1 = r[(bytes[1] >> 4) & 0xF];
 	size_t reg2 = r[bytes[1] & 0xF];
-	size_t displ = size_t(bytes[2] & 0xF )  << 4 + size_t(bytes[3]);
+	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
+	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
 	sp-=4;
 	Memory::write4Bytes(sp, pc);
     if(bytes[0] == 0x20){
@@ -114,18 +117,6 @@ size_t CPU::emulateRet(const vector<uint8_t>& bytes) {
     return 0; // Placeholder return value
 }
 
-size_t CPU::emulatePush(const vector<uint8_t>& bytes) {
-    // Implementation for emulatePush
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulatePop(const vector<uint8_t>& bytes) {
-    // Implementation for emulatePop
-    // ...
-    return 0; // Placeholder return value
-}
-
 size_t CPU::emulateXchg(const vector<uint8_t>& bytes) {
     if(bytes[0] == 0x40){
 		cout<<"XCHG\n";
@@ -147,10 +138,7 @@ size_t CPU::emulateArithmetic(const vector<uint8_t>& bytes){
 		case 0x50: reg1 = reg2 + reg3; break;
 		case 0x51: reg1 = reg2 - reg3; break;
 		case 0x52: reg1 = int(reg2) * int(reg3); break;
-		case 0x53: {
-			cout<<"DIV\n";
-			cout<<reg2 <<" "<<reg3<<endl;
-			reg1 = int(reg2) / int(reg3); break;}
+		case 0x53: reg1 = int(reg2) / int(reg3); break;
 		default: return CAUSE_OPCODE;
 	}
 	return 0;
@@ -183,26 +171,43 @@ size_t CPU::emulateShift(const vector<uint8_t>& bytes){
 }
 
 size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
-    // Implementation for emulateLd
-    // ...
+	size_t &reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t &reg2 = r[bytes[1] & 0xF];
+	size_t &reg3 = r[(bytes[2] >> 4) & 0xF];
+	size_t &sreg1 = sreg[(bytes[1] >> 4) & 0xF];
+	size_t &sreg2 = sreg[bytes[1] & 0xF];
+	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
+	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
+	switch (bytes[0]){
+		case 0x90 : cout<<"CSRRD\n"; reg1 = sreg2; break;
+		case 0x91 : cout<<"LD\n"; reg1 = reg2 + displ; break;
+		case 0x92 : cout<<"LD\n";{
+			cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
+		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
+		}
+		case 0x93 : cout<<"LD\n"; reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x94 : cout<<"CSRWR\n"; sreg1 = reg2; break;
+		case 0x95 : cout<<"SET CSR\n"; sreg1 = sreg2 | displ; break;
+		case 0x96 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
+		case 0x97 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		default: return CAUSE_OPCODE;
+	}
     return 0; // Placeholder return value
 }
 
 size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
-    // Implementation for emulateSt
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateCsrrd(const vector<uint8_t>& bytes) {
-    // Implementation for emulateCsrrd
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateCsrwr(const vector<uint8_t>& bytes) {
-    // Implementation for emulateCsrwr
-    // ...
+	size_t &reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t &reg2 = r[bytes[1] & 0xF];
+	size_t &reg3 = r[(bytes[2] >> 4) & 0xF];
+	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
+	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
+    switch(bytes[0]){
+		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
+		case 0x81 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
+		case 0x82 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		default: return CAUSE_OPCODE;
+	}
+	cout<<"STORE"<<endl;
     return 0; // Placeholder return value
 }
 

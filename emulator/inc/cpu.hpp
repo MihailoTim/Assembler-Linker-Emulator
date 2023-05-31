@@ -33,14 +33,10 @@ public:
     static size_t emulateCall(const vector<uint8_t>& bytes);
 	static size_t emulateBranch(const vector<uint8_t>& bytes);
     static size_t emulateRet(const vector<uint8_t>& bytes);
-    static size_t emulatePush(const vector<uint8_t>& bytes);
-    static size_t emulatePop(const vector<uint8_t>& bytes);
 	static size_t emulateXchg(const vector<uint8_t>& bytes);
 	static size_t emulateArithmetic(const vector<uint8_t>& bytes);
 	static size_t emulateLogic(const vector<uint8_t>& bytes);
 	static size_t emulateShift(const vector<uint8_t>& bytes);
     static size_t emulateLd(const vector<uint8_t>& bytes);
     static size_t emulateSt(const vector<uint8_t>& bytes);
-    static size_t emulateCsrrd(const vector<uint8_t>& bytes);
-    static size_t emulateCsrwr(const vector<uint8_t>& bytes);
 };
