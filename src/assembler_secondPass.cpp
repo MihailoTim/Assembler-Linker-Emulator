@@ -440,7 +440,7 @@ void SecondPass::writeReloContentToSection(string content)
 }
 
 void SecondPass::dumpContentToFile(){
-	ofstream out("./OUTPUT.hex");
+	ofstream out("./binary.hex");
 	symbolTable->printAllSections(out);
 	// symbolTable->printSymbolTable(out);
 	// symbolTable->printSectionTable(out);

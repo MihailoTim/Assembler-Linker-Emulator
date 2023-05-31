@@ -59,7 +59,7 @@ vector<uint8_t> Memory::getInstructionFromLine(string line){
 }
 
 void Memory::printMemory(size_t start, size_t end){
-	for(int j=0, i=start - start%8; i<end + 8 - end%8;i++, j++){
+	for(size_t j=0, i=(start - start%8); i<(end + 8 - end%8);i++, j++){
 		if(j%8 == 0 && j!=0){
 			cout<<"\n";
 		}

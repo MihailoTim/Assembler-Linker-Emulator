@@ -203,7 +203,10 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
     switch(bytes[0]){
 		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
-		case 0x81 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		case 0x81 : {
+			cout<<reg1<<" "<<reg3<<" "<<displ<<endl;
+			reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		}
 		case 0x82 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
 		default: return CAUSE_OPCODE;
 	}
@@ -220,4 +223,8 @@ void CPU::printRegisterFile(){
             cout << endl;
         }
     }
+
+	cout<<"status="<<status<<endl;
+	cout<<"handler="<<handler<<endl;
+	cout<<"cause="<<cause<<endl;
 }

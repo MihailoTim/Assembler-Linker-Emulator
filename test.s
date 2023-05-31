@@ -16,5 +16,10 @@ shr %r1, %r5 # r5 = -1
 ld $11, %r7
 st %r7, 0x1000000
 ld 0x10000000, %r8
+csrwr %r7, %status
+csrrd %status, %r11
+csrwr %r11, %cause
+push %r11
+pop %r13
 halt
 .end
