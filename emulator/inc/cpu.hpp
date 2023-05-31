@@ -21,6 +21,7 @@ public:
 	static size_t &handler;
 	static size_t &cause;
 
+	static void printRegisterFile();
 
 	static void emulate(size_t startAddr);
 
@@ -30,24 +31,14 @@ public:
     static size_t emulateInt(const vector<uint8_t>& bytes);
     static size_t emulateIret(const vector<uint8_t>& bytes);
     static size_t emulateCall(const vector<uint8_t>& bytes);
+	static size_t emulateBranch(const vector<uint8_t>& bytes);
     static size_t emulateRet(const vector<uint8_t>& bytes);
-    static size_t emulateJmp(const vector<uint8_t>& bytes);
-    static size_t emulateBeq(const vector<uint8_t>& bytes);
-    static size_t emulateBne(const vector<uint8_t>& bytes);
-    static size_t emulateBgt(const vector<uint8_t>& bytes);
     static size_t emulatePush(const vector<uint8_t>& bytes);
     static size_t emulatePop(const vector<uint8_t>& bytes);
-    static size_t emulateXchg(const vector<uint8_t>& bytes);
-    static size_t emulateAdd(const vector<uint8_t>& bytes);
-    static size_t emulateSub(const vector<uint8_t>& bytes);
-    static size_t emulateMul(const vector<uint8_t>& bytes);
-    static size_t emulateDiv(const vector<uint8_t>& bytes);
-    static size_t emulateNot(const vector<uint8_t>& bytes);
-    static size_t emulateAnd(const vector<uint8_t>& bytes);
-    static size_t emulateOr(const vector<uint8_t>& bytes);
-    static size_t emulateXor(const vector<uint8_t>& bytes);
-    static size_t emulateShl(const vector<uint8_t>& bytes);
-    static size_t emulateShr(const vector<uint8_t>& bytes);
+	static size_t emulateXchg(const vector<uint8_t>& bytes);
+	static size_t emulateArithmetic(const vector<uint8_t>& bytes);
+	static size_t emulateLogic(const vector<uint8_t>& bytes);
+	static size_t emulateShift(const vector<uint8_t>& bytes);
     static size_t emulateLd(const vector<uint8_t>& bytes);
     static size_t emulateSt(const vector<uint8_t>& bytes);
     static size_t emulateCsrrd(const vector<uint8_t>& bytes);

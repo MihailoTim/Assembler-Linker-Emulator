@@ -19,6 +19,7 @@ void CPU::emulate(size_t startdAddr){
 	sp = STACK_BASE;
 	size_t ret = 0;
 	while(ret == 0){
+		cout<<"CURRENT PC: "<<pc<<endl;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
 		for(auto byte : line){
@@ -35,19 +36,28 @@ size_t CPU::emulateInstruction(vector<uint8_t> bytes){
 		case 0x0 : return emulateHalt(bytes);
 		case 0x1 : return emulateInt(bytes);
 		case 0x2 : return emulateCall(bytes);
+		case 0x3 : return emulateBranch(bytes);
+		case 0x4 : return emulateXchg(bytes);
+		case 0x5 : return emulateArithmetic(bytes);
+		case 0x6 : return emulateLogic(bytes);
+		case 0x7 : return emulateShift(bytes);
 	}
 	return 0;
 }
 
 size_t CPU::emulateHalt(const vector<uint8_t>& bytes) {
-    if(bytes[0] == 0)
+    if(bytes[0] == 0){
+		cout<<"HALT\n";
 		return CAUSE_HALT;
+	}
     return CAUSE_OPCODE;
 }
 
 size_t CPU::emulateInt(const vector<uint8_t>& bytes) {
-    if(bytes[0] == 1<<4)
+    if(bytes[0] == 1<<4){
+		cout<<"INT\n";
 		return CAUSE_INT;
+	}
     return CAUSE_OPCODE;
 }
 
@@ -58,51 +68,48 @@ size_t CPU::emulateIret(const vector<uint8_t>& bytes) {
 }
 
 size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
+	size_t reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t reg2 = r[bytes[1] & 0xF];
+	size_t displ = size_t(bytes[2] & 0xF )  << 4 + size_t(bytes[3]);
+	sp-=4;
+	Memory::write4Bytes(sp, pc);
     if(bytes[0] == 0x20){
-		size_t reg1 = bytes[1] >> 4 & 0xF;
-		size_t reg2 = bytes[1] & 0xF;
-		size_t displ = size_t(bytes[2] & 0xF )  << 4 + size_t(bytes[3]);
-		sp-=4;
-		Memory::write4Bytes(sp, pc);
 		pc = reg1 + reg2 + displ;
+		cout<<"CALL TO: "<<pc<<endl;
+		return 0;
 	}
 	if(bytes[0] == 0x21){
-		size_t reg1 = bytes[1] >> 4 & 0xF;
-		size_t reg2 = bytes[1] & 0xF;
-		size_t displ = size_t(bytes[2] & 0xF )  << 4 + size_t(bytes[3]);
-		sp-=4;
-		Memory::write4Bytes(sp, pc);
-		pc = Memory::memory[reg1 + reg2 + displ];
+		pc = Memory::read4Bytes(reg1 + reg2 + displ);
+		cout<<"CALL TO: "<<pc<<endl;
+		return 0;
 	}
-    return 0; // Placeholder return value
+    return CAUSE_OPCODE;
+}
+
+
+size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
+	size_t reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t reg2 = r[bytes[1] & 0xF];
+	size_t reg3 = r[(bytes[2] >> 4) & 0xF];
+	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
+	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
+	switch(bytes[0]){
+		case 0x30 : pc = reg1 + displ; break;
+		case 0x31 : if(reg2 == reg3) pc = reg1 + displ; break;
+		case 0x32 : if(reg2 != reg3) pc = reg1 + displ; break;
+		case 0x33 : if(reg2 > reg3) pc = reg1 + displ; break;
+		case 0x38 : pc = Memory::read4Bytes(reg1 + displ);
+		case 0x39 : if(reg2 == reg3) pc = Memory::read4Bytes(reg1 + displ); break;
+		case 0x3a : if(reg2 != reg3) pc = Memory::read4Bytes(reg1 + displ); break;
+		case 0x3b : if(reg2 > reg3) pc = Memory::read4Bytes(reg1 + displ); break;
+		default: return CAUSE_OPCODE;
+	}
+	cout<<"BRANCH TO: "<<pc<<endl;
+	return 0;
 }
 
 size_t CPU::emulateRet(const vector<uint8_t>& bytes) {
     // Implementation for emulateRet
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateJmp(const vector<uint8_t>& bytes) {
-    // Implementation for emulateJmp
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateBeq(const vector<uint8_t>& bytes) {
-    // Implementation for emulateBeq
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateBne(const vector<uint8_t>& bytes) {
-    // Implementation for emulateBne
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateBgt(const vector<uint8_t>& bytes) {
-    // Implementation for emulateBgt
     // ...
     return 0; // Placeholder return value
 }
@@ -120,69 +127,59 @@ size_t CPU::emulatePop(const vector<uint8_t>& bytes) {
 }
 
 size_t CPU::emulateXchg(const vector<uint8_t>& bytes) {
-    // Implementation for emulateXchg
-    // ...
-    return 0; // Placeholder return value
+    if(bytes[0] == 0x40){
+		cout<<"XCHG\n";
+		size_t &reg1 = r[bytes[1] & 0xF];
+		size_t &reg2 = r[(bytes[2] >> 4) & 0xF];
+		size_t tmp = reg1;
+		reg1 = reg2;
+		reg2 = tmp;
+		return 0;
+	}
+    return CAUSE_OPCODE;
 }
 
-size_t CPU::emulateAdd(const vector<uint8_t>& bytes) {
-    // Implementation for emulateAdd
-    // ...
-    return 0; // Placeholder return value
+size_t CPU::emulateArithmetic(const vector<uint8_t>& bytes){
+	size_t &reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t &reg2 = r[bytes[1] & 0xF];
+	size_t &reg3 = r[(bytes[2] >> 4) & 0xF];
+	switch(bytes[0]){
+		case 0x50: reg1 = reg2 + reg3; break;
+		case 0x51: reg1 = reg2 - reg3; break;
+		case 0x52: reg1 = int(reg2) * int(reg3); break;
+		case 0x53: {
+			cout<<"DIV\n";
+			cout<<reg2 <<" "<<reg3<<endl;
+			reg1 = int(reg2) / int(reg3); break;}
+		default: return CAUSE_OPCODE;
+	}
+	return 0;
 }
 
-size_t CPU::emulateSub(const vector<uint8_t>& bytes) {
-    // Implementation for emulateSub
-    // ...
-    return 0; // Placeholder return value
+size_t CPU::emulateLogic(const vector<uint8_t>& bytes){
+	size_t &reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t &reg2 = r[bytes[1] & 0xF];
+	size_t &reg3 = r[(bytes[2] >> 4) & 0xF];
+	switch(bytes[0]){
+		case 0x60: reg1 = ~reg2; break;
+		case 0x61: reg1 = reg2 & reg3; break;
+		case 0x62: reg1 = reg2 | reg3; break;
+		case 0x63: reg1 = reg2 ^ reg3; break;
+		default: return CAUSE_OPCODE;
+	}
+	return 0;
 }
 
-size_t CPU::emulateMul(const vector<uint8_t>& bytes) {
-    // Implementation for emulateMul
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateDiv(const vector<uint8_t>& bytes) {
-    // Implementation for emulateDiv
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateNot(const vector<uint8_t>& bytes) {
-    // Implementation for emulateNot
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateAnd(const vector<uint8_t>& bytes) {
-    // Implementation for emulateAnd
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateOr(const vector<uint8_t>& bytes) {
-    // Implementation for emulateOr
-    // ...
-    return 0; //
-}
-
-size_t CPU::emulateXor(const vector<uint8_t>& bytes) {
-    // Implementation for emulateXor
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateShl(const vector<uint8_t>& bytes) {
-    // Implementation for emulateShl
-    // ...
-    return 0; // Placeholder return value
-}
-
-size_t CPU::emulateShr(const vector<uint8_t>& bytes) {
-    // Implementation for emulateShr
-    // ...
-    return 0; // Placeholder return value
+size_t CPU::emulateShift(const vector<uint8_t>& bytes){
+	size_t &reg1 = r[(bytes[1] >> 4) & 0xF];
+	size_t &reg2 = r[bytes[1] & 0xF];
+	size_t &reg3 = r[(bytes[2] >> 4) & 0xF];
+	switch(bytes[0]){
+		case 0x70: reg1 = reg2 << reg3; break;
+		case 0x71: reg1 = reg2 >> reg3; break;
+		default: return CAUSE_OPCODE;
+	}
+	return 0;
 }
 
 size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
@@ -207,4 +204,15 @@ size_t CPU::emulateCsrwr(const vector<uint8_t>& bytes) {
     // Implementation for emulateCsrwr
     // ...
     return 0; // Placeholder return value
+}
+
+void CPU::printRegisterFile(){
+	cout << right;
+
+    for (int i = 0; i < 16; ++i) {
+        cout << "r" <<dec<< i << "=" << std::setw(10) << std::setfill('0') << std::hex << r[i] << " ";
+        if ((i + 1) % 4 == 0) {
+            cout << endl;
+        }
+    }
 }

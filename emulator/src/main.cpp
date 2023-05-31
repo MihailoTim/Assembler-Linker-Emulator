@@ -20,4 +20,7 @@ int main(int argc, char** argv){
 	size_t value = Memory::read4Bytes(0);
 
 	CPU::emulate(0);
+
+	CPU::printRegisterFile();
+
 }
