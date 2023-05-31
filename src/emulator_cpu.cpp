@@ -1,5 +1,6 @@
 #include "../inc/emulator_cpu.hpp"
 #include "../inc/emulator_memory.hpp"
+#include "../inc/emulator_exceptions.hpp"
 #include <iomanip>
 #include <algorithm>
 
@@ -19,7 +20,8 @@ void CPU::emulate(size_t startdAddr){
 	sp = STACK_BASE;
 	size_t ret = 0;
 	while(ret == 0){
-		cout<<"CURRENT PC: "<<pc<<endl;
+		r[0] = 0;
+		cout<<"CURRENT PC: "<<hex<<pc<<endl;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
 		for(auto byte : line){
@@ -28,6 +30,18 @@ void CPU::emulate(size_t startdAddr){
 		cout<<endl;
 		pc+=4;
 		ret = emulateInstruction(line);
+		if(ret == CAUSE_HALT){
+			break;
+		}
+		else if(ret == 0){
+			continue;
+		}
+		else if(ret == CAUSE_OPCODE){
+			throw new Exception("Opcode not recognized\n");
+		}
+		else{
+			ret = 0;
+		}
 	}
 }
 
@@ -58,6 +72,11 @@ size_t CPU::emulateHalt(const vector<uint8_t>& bytes) {
 size_t CPU::emulateInt(const vector<uint8_t>& bytes) {
     if(bytes[0] == 1<<4){
 		cout<<"INT\n";
+		executePush(status);
+		executePush(pc);
+		cause = 4;
+		status = status & (~1UL);
+		pc = handler;
 		return CAUSE_INT;
 	}
     return CAUSE_OPCODE;
@@ -74,8 +93,9 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	size_t reg2 = r[bytes[1] & 0xF];
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
-	sp-=4;
-	Memory::write4Bytes(sp, pc);
+
+	executePush(pc);
+
     if(bytes[0] == 0x20){
 		pc = reg1 + reg2 + displ;
 		cout<<"CALL TO: "<<pc<<endl;
@@ -96,9 +116,15 @@ size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
 	size_t reg3 = r[(bytes[2] >> 4) & 0xF];
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
+	cout<<"DISPLACEMENT: "<<dec<<displ<<endl;
+	cout<<reg2<<" "<<reg3<<endl;
 	switch(bytes[0]){
 		case 0x30 : pc = reg1 + displ; break;
-		case 0x31 : if(reg2 == reg3) pc = reg1 + displ; break;
+		case 0x31 :{
+			cout<<reg2<<" "<<reg3<<endl;
+		 if(reg2 == reg3) pc = reg1 + displ; break;
+
+		}
 		case 0x32 : if(reg2 != reg3) pc = reg1 + displ; break;
 		case 0x33 : if(reg2 > reg3) pc = reg1 + displ; break;
 		case 0x38 : pc = Memory::read4Bytes(reg1 + displ);
@@ -227,4 +253,9 @@ void CPU::printRegisterFile(){
 	cout<<"status="<<status<<endl;
 	cout<<"handler="<<handler<<endl;
 	cout<<"cause="<<cause<<endl;
+}
+
+size_t CPU::executePush(size_t value){
+	sp-=4;
+	Memory::write4Bytes(sp, pc);
 }

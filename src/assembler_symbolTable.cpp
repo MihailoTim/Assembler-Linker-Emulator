@@ -175,9 +175,12 @@ void SymbolTable::printSection(string section, ofstream &out){
 	// out<<res;
 	res="";
 	for(int i=0;i<sctnline.content.size();i++){
-		if(i%8 == 0 && i!= 0){
+		if(i%16 == 0 && i!= 0){
 			for(int j=3;j>=0;j--){
-				out<<res.substr(j*2, 2)<< (j == 0 ? "" : " ");
+				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
+			}
+			for(int j=7;j>=4;j--){
+				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
 			}
 			res="";
 			out<<" ";
@@ -190,14 +193,18 @@ void SymbolTable::printSection(string section, ofstream &out){
 		}
 		res+=sctnline.content[i];
 	}
-	for(int j=res.size()/2-1;j>=0;j--){
-		out<<res.substr(j*2, 2)<< (j == 0 ? "" : " ");
-	}
-	if(res.size() % 8 != 0){
-		out<<" ";
-		for(int i=3 - res.size()/2;i>=0;i--){
-			out<<"00"<< (i == 0 ? "\n" : " ");
+	cout<<res.size()<<endl;
+	cout<<res<<endl;
+	if(res.size() % 16 != 0){
+		for(int i=7 - (res.size()%16)/2;i>=0;i--){
+			res += "00";
 		}
+	}
+	for(int j=3;j>=0;j--){
+		out<<res.substr(j*2, 2)<< " ";
+	}
+	for(int j=7;j>=4;j--){
+		out<<res.substr(j*2, 2)<<" ";
 	}
 	// out<< "\n#.rela." + sctnline.name + "\n";
 	// for(int i=0;i<sctnline.reloTable.size();i++){
