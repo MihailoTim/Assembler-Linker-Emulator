@@ -1,7 +1,7 @@
 #include <string>
-#include "../h/argument.hpp"
-#include "../h/assemblyLine.hpp"
-#include "../h/symbolTable.hpp"
+#include "../inc/assembler_argument.hpp"
+#include "../inc/assembler_assemblyLine.hpp"
+#include "../inc/assembler_symbolTable.hpp"
 #include <map>
 using namespace std;
 

@@ -1,5 +1,5 @@
-#include "../inc/cpu.hpp"
-#include "../inc/memory.hpp"
+#include "../inc/emulator_cpu.hpp"
+#include "../inc/emulator_memory.hpp"
 #include <iomanip>
 #include <algorithm>
 
@@ -203,8 +203,8 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
     switch(bytes[0]){
 		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
-		case 0x81 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
-		case 0x82 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		case 0x81 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		case 0x82 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
 		default: return CAUSE_OPCODE;
 	}
 	cout<<"STORE"<<endl;

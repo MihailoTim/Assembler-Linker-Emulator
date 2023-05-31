@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "../h/symbolTable.hpp"
+#include "../inc/assembler_symbolTable.hpp"
 
 using namespace std;
 

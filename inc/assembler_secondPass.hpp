@@ -1,6 +1,6 @@
-#include "../h/assemblyFile.hpp"
-#include "../h/symbolTable.hpp"
-#include "../h/relocationTable.hpp"
+#include "../inc/assembler_assemblyFile.hpp"
+#include "../inc/assembler_symbolTable.hpp"
+#include "../inc/assembler_relocationTable.hpp"
 #include <set>
 
 #ifndef _SECOND_PASS_H
@@ -80,6 +80,8 @@ public:
 	void performBetweenPassCheck();
 
 	void performLineByLine();
+
+    void dumpContentToFile();
 
 	void handleDirective(AssemblyLine *line);
 

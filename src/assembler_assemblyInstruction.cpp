@@ -1,4 +1,4 @@
-#include "../h/assemblyInstruction.hpp"
+#include "../inc/assembler_assemblyInstruction.hpp"
 #include <sstream>
 #include <iomanip>
 
@@ -229,7 +229,7 @@ string AssemblyInstruction::getPushBytes(AssemblyLine *line, size_t displ){
 	//REGIND STORE
 	int byte1 = 0x81;
 	int byte2 = 0xE << 4 | 0;
-	int byte3 = (-4) >> 8;
+	int byte3 = ((-4) >> 8) & 0xF ;
 	int byte4 = (-4) & 0xFF;
 	return get4Bytes(byte1, byte2, byte3, byte4);
 }

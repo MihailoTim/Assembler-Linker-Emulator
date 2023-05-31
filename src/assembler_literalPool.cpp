@@ -1,6 +1,6 @@
-#include "../h/literalPool.hpp"
-#include "../h/assemblyInstruction.hpp"
-#include "../h/secondPass.hpp"
+#include "../inc/assembler_literalPool.hpp"
+#include "../inc/assembler_assemblyInstruction.hpp"
+#include "../inc/assembler_secondPass.hpp"
 
 map<size_t, LiteralPool::LiteralPoolEntry*> LiteralPool::literalPool;
 size_t LiteralPool::count = 0;
@@ -94,7 +94,7 @@ void LiteralPool::conditionalDumpPool(string &content, size_t &newLocationCounte
 }
 
 string LiteralPool::getLiteralPoolSkipInstruction(size_t delta){
-	string res = "eeee";
+	string res = "30f0";
 	size_t size = delta;
 	string byte3 = AssemblyInstruction::getByte((size >> 8) && 0xF);
 	string byte4 = AssemblyInstruction::getByte(size & 0xFF);

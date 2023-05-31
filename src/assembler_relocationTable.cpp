@@ -1,4 +1,4 @@
-#include "../h/relocationTable.hpp"
+#include "../inc/assembler_relocationTable.hpp"
 
 RelocationTable::RelocationTableLine* RelocationTable::handleNewReloLine(size_t offset, RelocationType type, string symbol){
 	SymbolTable::SymbolTableLine symbolToRelo = symbolTable.symbolTable[symbol];

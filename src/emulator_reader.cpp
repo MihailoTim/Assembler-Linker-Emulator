@@ -1,4 +1,4 @@
-#include "../inc/reader.hpp"
+#include "../inc/emulator_reader.hpp"
 
 vector<string> Reader::readFile(ifstream &in){
 	string line;

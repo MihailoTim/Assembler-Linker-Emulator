@@ -1,4 +1,4 @@
-#include "../inc/memory.hpp"
+#include "../inc/emulator_memory.hpp"
 #include <iomanip>
 
 uint8_t* Memory::memory = new uint8_t[ADDRESS_SPACE];

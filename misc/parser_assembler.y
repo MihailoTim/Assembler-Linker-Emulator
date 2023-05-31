@@ -4,11 +4,11 @@
     #include <map>
     #include <string.h>
     #include <stdlib.h>
-    #include "../h/exceptions.hpp"
-    #include "../h/firstPass.hpp"
-    #include "../h/assemblyLine.hpp"
-    #include "../h/assemblyFile.hpp"
-    #include "../h/secondPass.hpp"
+    #include "../inc/assembler_exceptions.hpp"
+    #include "../inc/assembler_firstPass.hpp"
+    #include "../inc/assembler_assemblyLine.hpp"
+    #include "../inc/assembler_assemblyFile.hpp"
+    #include "../inc/assembler_secondPass.hpp"
     extern int yylex();
     extern int yyparse();
     extern FILE *yyin;

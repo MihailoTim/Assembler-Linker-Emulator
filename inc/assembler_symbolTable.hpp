@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include "../h/exceptions.hpp"
+#include "../inc/assembler_exceptions.hpp"
+#include <fstream>
+#include <iostream>
 using namespace std;
 
 #ifndef _SYMBOL_TABLE_HPP
@@ -32,12 +34,16 @@ public:
 
 	void handleSymbolReference(string symbol, size_t locationCounter);
 
+	void printSymbolTable(ofstream &out);
 	void printSymbolTable();
 
+	void printSectionTable(ofstream &out);
 	void printSectionTable();
 
 	void printSection(string section);
+	void printSection(string section, ofstream &out);
 
+	void printAllSections(ofstream &out);
 	void printAllSections();
 
 	friend class SecondPass;

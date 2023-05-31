@@ -1,7 +1,7 @@
 #include <iostream>
-#include "../inc/reader.hpp"
-#include "../inc/memory.hpp"
-#include "../inc/cpu.hpp"
+#include "../inc/emulator_reader.hpp"
+#include "../inc/emulator_memory.hpp"
+#include "../inc/emulator_cpu.hpp"
 
 using namespace std;
 

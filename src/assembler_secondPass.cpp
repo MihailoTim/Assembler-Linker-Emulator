@@ -1,8 +1,8 @@
-#include "../h/secondPass.hpp"
-#include "../h/assemblyInstruction.hpp"
+#include "../inc/assembler_secondPass.hpp"
+#include "../inc/assembler_assemblyInstruction.hpp"
 #include <map>
-#include "../h/secondPass.hpp"
-#include "../h/literalPool.hpp"
+#include "../inc/assembler_secondPass.hpp"
+#include "../inc/assembler_literalPool.hpp"
 
 string SecondPass::currentSection = "";
 size_t SecondPass::locationCounter = 0;
@@ -24,10 +24,12 @@ void SecondPass::performBetweenPassCheck(){
 void SecondPass::start(){
 	status = RUNNING;
 	setSymbolTable(&SymbolTable::getInstance());
-	symbolTable->printSymbolTable();
-	symbolTable->printSectionTable();
 	performBetweenPassCheck();
 	performLineByLine();
+	symbolTable->printAllSections();
+	symbolTable->printSymbolTable();
+	symbolTable->printSectionTable();
+	dumpContentToFile();
 }
 
 void SecondPass::performLineByLine(){
@@ -121,9 +123,6 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	sctnline.length = locationCounter - sctnline.base;
 	sctnline.reloTable = reloTable->getContent();
-	symbolTable->printAllSections();
-	symbolTable->printSymbolTable();
-	symbolTable->printSectionTable();
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
@@ -345,6 +344,7 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		if(sctline.symTabId == symline.ndx){
 			if(canFitInDispl(symline.value, locationCounter + 4)){
+				useDispl = true;
 				if((int)symline.value - ((int)locationCounter + 4) > 0){
 					LiteralPool::handleForwardBranch(locationCounter+2, symline.value - (locationCounter + 4));
 				}
@@ -352,7 +352,7 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 			}
 		}
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -366,7 +366,7 @@ int SecondPass::handleCallArgument(Argument *arg){
 		cout<<"LOCATION COUNTER: "<<locationCounter<<endl;
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
+		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -380,7 +380,7 @@ int SecondPass::handleLoadArgument(Argument *arg){
 		if(arg->argType == ArgumentType::SYM){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 		}
 		if(arg->argType == ArgumentType::LITERAL){
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -408,7 +408,7 @@ int SecondPass::handleStoreArgument(Argument *arg){
 		if(arg->argType == ArgumentType::SYM){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, 0, line);
+			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 		}
 		if(arg->argType == ArgumentType::LITERAL){
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -437,4 +437,11 @@ void SecondPass::writeContentToSection(string content){
 void SecondPass::writeReloContentToSection(string content)
 {
 	// reloTableContent.push_back(content);
+}
+
+void SecondPass::dumpContentToFile(){
+	ofstream out("./OUTPUT.hex");
+	symbolTable->printAllSections(out);
+	// symbolTable->printSymbolTable(out);
+	// symbolTable->printSectionTable(out);
 }

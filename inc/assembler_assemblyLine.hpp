@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../h/argument.hpp"
+#include "../inc/assembler_argument.hpp"
 
 #ifndef _ASSEMBLY_LINE_HPP
 #define _ASSEMBLY_LINE_HPP

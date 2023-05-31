@@ -2,8 +2,8 @@
 #include <cstring>
 #include <fstream>
 #include <vector>
-#include "../h/firstPass.hpp"
-#include "../h/secondPass.hpp"
+#include "../inc/assembler_firstPass.hpp"
+#include "../inc/assembler_secondPass.hpp"
 
 using namespace std;
 

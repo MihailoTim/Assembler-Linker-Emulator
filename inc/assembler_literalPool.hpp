@@ -1,6 +1,6 @@
 #include <vector>
 #include <map>
-#include "../h/relocationTable.hpp"
+#include "../inc/assembler_relocationTable.hpp"
 using namespace std;
 
 #ifndef _LITERAL_POOL_H
