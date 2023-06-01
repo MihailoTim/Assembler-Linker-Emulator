@@ -40,6 +40,10 @@ public:
     static size_t emulateLd(const vector<uint8_t>& bytes);
     static size_t emulateSt(const vector<uint8_t>& bytes);
 
+	static inline size_t isTerminalInterruptEnabled(){return !(status & 0x1);}
+	static inline size_t isTimerInterruptEnabled(){return !(status & 0x2);}
+	static inline size_t isInterruptEnabled(){return !(status & 0x4);}
+
 	static size_t executePush(size_t value);
 	static size_t executePop(size_t value);
 };

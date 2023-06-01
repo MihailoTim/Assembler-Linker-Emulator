@@ -1,3 +1,5 @@
+ld $0, %r1
+csrwr %r1, %status
 wait_for_click:
 ld 0xFFFFFF04, %r1
 beq %r1, %r0, wait_for_click

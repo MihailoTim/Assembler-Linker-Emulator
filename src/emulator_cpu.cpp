@@ -32,7 +32,9 @@ void CPU::emulate(size_t startdAddr){
 		// cout<<endl;
 		pc+=4;
 		ret = emulateInstruction(line);
-		Terminal::getChar();
+		if(isTerminalInterruptEnabled() && isInterruptEnabled()){
+			Terminal::getChar();
+		}
 		Terminal::putChar();
 		if(ret == CAUSE_HALT){
 			break;
@@ -206,7 +208,7 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 			cout<<"LD\n"; reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
 
 		} 
-		case 0x94 : cout<<"CSRWR\n"; sreg1 = reg2; break;
+		case 0x94 : cout<<"CSRWR\n"; sreg1 = reg2; cout<<status<<endl;break;
 		case 0x95 : cout<<"SET CSR\n"; sreg1 = sreg2 | displ; break;
 		case 0x96 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		case 0x97 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
