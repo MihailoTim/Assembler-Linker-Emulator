@@ -76,6 +76,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	sctnline.length = locationCounter - sctnline.base;
 	fixSymbolReferences();
+	fixReloTable();
 	LiteralPool::changeSection();
 	sctnline.reloTable = reloTable->getContent();
 	currentSection = line->args[0]->stringVal;
@@ -128,6 +129,7 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 	sctnline.content = sectionContent;
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	fixSymbolReferences();
+	fixReloTable();
 	sctnline.length = locationCounter - sctnline.base;
 	sctnline.reloTable = reloTable->getContent();
 }
@@ -469,4 +471,14 @@ void SecondPass::fixSymbolReferences(){
 			}
 		}
 	}
+}
+
+void SecondPass::fixReloTable(){
+	RelocationTable *newReloTable = new RelocationTable(currentSection);
+
+	for(auto it = reloTable->reloTable.begin();it!=reloTable->reloTable.end();it++){
+		newReloTable->handleNewReloLine(it->second->offset, RelocationTable::RelocationType::R_32, it->second->relocatedSymbol);
+	}
+
+	reloTable = newReloTable;
 }

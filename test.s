@@ -5,20 +5,20 @@ ld 0xFFFFFF04, %r1
 jmp wait_for_click
 halt
 handler:
-csrwr %r0, %cause
  push %r1
  push %r2
  csrrd %cause, %r1
  ld $3, %r2
- beq %r1, %r2, my_isr_terminal
+ bne %r1, %r2, finish
+ call my_isr_terminal
 # obrada prekida od terminala
-my_isr_terminal:
- ld 0xFFFFFF04, %r1
- st %r1, 0xFFFFFF00
 finish:
  pop %r2
  pop %r1
+ csrwr %r0, %cause
  iret #komentar
- # .emd
- halt
+ my_isr_terminal:
+ ld 0xFFFFFF04, %r1
+ st %r1, 0xFFFFFF00
+ ret
  .end

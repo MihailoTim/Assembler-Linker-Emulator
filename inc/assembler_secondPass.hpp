@@ -140,6 +140,8 @@ public:
 
     static void fixSymbolReferences();
 
+    static void fixReloTable();
+
 	inline PassStatus getStatus(){return status;}
 
 	inline void setStatus(PassStatus s){status = s;}

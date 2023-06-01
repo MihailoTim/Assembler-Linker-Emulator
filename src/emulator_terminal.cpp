@@ -39,7 +39,7 @@ void Terminal::reset(){
 void Terminal::putChar(){
 	size_t out = Memory::read4Bytes(term_out);
 	if(out){
-		cout<<char(out);
+		cout<<char(out & 0xFF);
 		cout<<flush;
 		Memory::write4Bytes(term_out, 0);
 	}

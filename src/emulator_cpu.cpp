@@ -16,6 +16,8 @@ size_t& CPU::status = sreg[0];
 size_t& CPU::handler = sreg[1];
 size_t& CPU::cause = sreg[2];
 
+int interrupt_count = 0;
+
 void CPU::emulate(size_t startdAddr){
 	pc = startdAddr;
 	sp = STACK_BASE;
@@ -39,11 +41,12 @@ void CPU::emulate(size_t startdAddr){
 			if(isTerminalInterruptEnabled() && isInterruptEnabled()){
 				Terminal::getChar();
 			}
-			if(cause == 3){
+			if(cause == 3 && isInterruptEnabled() && isTerminalInterruptEnabled()){
 				executePush(status);
 				executePush(pc);
 				status |= 0x7;
 				pc = handler;
+				interrupt_count++;
 			}
 			ret = 0;
 		}
@@ -90,7 +93,6 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	size_t reg2 = r[bytes[1] & 0xF];
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
-
 	executePush(pc);
 
     if(bytes[0] == 0x20){

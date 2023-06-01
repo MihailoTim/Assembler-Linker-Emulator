@@ -18,12 +18,13 @@ private:
 		enum RelocationType{R_32, R_PC32};
 		size_t offset;
 		RelocationType type;
-		size_t symbol;
+		size_t referencedSymbol;
+		string relocatedSymbol;
 		long addend;
-		RelocationTableLine(size_t o, RelocationType rt, size_t s, long a): offset(o), type(rt), symbol(s), addend(a){}
+		RelocationTableLine(size_t o, RelocationType rt, size_t s, long a, string reloSymbol): offset(o), type(rt), referencedSymbol(s), addend(a), relocatedSymbol(reloSymbol){}
 
 		void printReloTableLine(){
-			cout << offset << " " << (type == R_32 ? "R_32" : "R_PC32") <<" " << symbol << " " << addend;
+			cout << offset << " " << (type == R_32 ? "R_32" : "R_PC32") <<" " << referencedSymbol << " " << addend;
 		}
 	};
 
