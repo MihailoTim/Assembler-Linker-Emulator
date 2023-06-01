@@ -14,6 +14,7 @@ public:
 	enum SymbolSection{GLOBAL=-1, UNDEFINED=0};
 	enum SymbolBind{LOC, GLOB, UNBOUND};
 	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
+	enum ReferenceLocation{DIRECT, INDIRECT};
 
 	static SymbolTable& getInstance(){
 		static SymbolTable instance;
@@ -50,6 +51,12 @@ public:
 	friend class RelocationTable;
 	friend class LiteralPool;
 private:
+	struct Reference{
+		size_t locationCounter;
+		ReferenceLocation refType;
+		size_t refPoint;
+		Reference(size_t loc, ReferenceLocation rt, size_t rp): locationCounter(loc), refType(rt), refPoint(rp){}
+	};
 	struct SymbolTableLine{
 		size_t num;
 		size_t value;
@@ -59,9 +66,10 @@ private:
 		int ndx;
 		string name;
 		bool global;
-		
+		vector<Reference*> references;
 		SymbolTableLine(){}
 		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), value(v), ndx(ind), bind(sb), type(st), name(sname), size(s), global(false){}
+		void addNewReference(size_t locationCounter, ReferenceLocation type, size_t referencePoint){references.push_back(new Reference(locationCounter, type, referencePoint));}
 	};
 	struct SectionTableLine{
 		size_t base;

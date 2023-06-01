@@ -35,6 +35,11 @@ void SecondPass::start(){
 void SecondPass::performLineByLine(){
 	for(auto line : file->readFile()){
 		locationCounter = sectionContent.size() / 2;
+		if(line->label.size()){
+			cout<<locationCounter<<" "<<line->label<<endl;
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[line->label];
+			symline.value = locationCounter;
+		}
 		if(directiveHandlers.count(line->mnemonic))
 			handleDirective(line);
 		else
@@ -70,6 +75,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 	LiteralPool::printLiteralPool();
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	sctnline.length = locationCounter - sctnline.base;
+	fixSymbolReferences();
 	LiteralPool::changeSection();
 	sctnline.reloTable = reloTable->getContent();
 	currentSection = line->args[0]->stringVal;
@@ -121,11 +127,13 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
+	fixSymbolReferences();
 	sctnline.length = locationCounter - sctnline.base;
 	sctnline.reloTable = reloTable->getContent();
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
+	cout<<locationCounter<<": HALT"<<endl;
 	string content = AssemblyInstruction::getHaltBytes(line);
 	writeContentToSection(content);
     //locationCounter += 4;
@@ -161,7 +169,7 @@ void SecondPass::handleRetInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": CALL"<<endl;
+	cout<<locationCounter<<": JMP"<<endl;
 	bool useDispl = false;
 	int displ = handleBranchArgument(line->args[0], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
@@ -348,10 +356,12 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 				if((int)symline.value - ((int)locationCounter + 4) > 0){
 					LiteralPool::handleForwardBranch(locationCounter+2, symline.value - (locationCounter + 4));
 				}
+				symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, locationCounter+4);
 				return symline.value - (locationCounter + 4);
 			}
 		}
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::INDIRECT, locationCounter + 4);
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
@@ -366,6 +376,7 @@ int SecondPass::handleCallArgument(Argument *arg){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
+		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::INDIRECT, locationCounter+4);
 	}
 	if(arg->argType == ArgumentType::LITERAL){
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -387,9 +398,8 @@ int SecondPass::handleLoadArgument(Argument *arg){
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			// string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			// writeReloContentToSection(content);
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
@@ -415,9 +425,8 @@ int SecondPass::handleStoreArgument(Argument *arg){
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			// string content = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
-			// writeReloContentToSection(content);
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
@@ -443,4 +452,21 @@ void SecondPass::dumpContentToFile(){
 	symbolTable->printAllSections(out);
 	// symbolTable->printSymbolTable(out);
 	// symbolTable->printSectionTable(out);
+}
+
+void SecondPass::fixSymbolReferences(){
+	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
+	for(auto it = symbolTable->symbolTable.begin(); it!=symbolTable->symbolTable.end();it++){
+		SymbolTable::SymbolTableLine &stline = symbolTable->symbolTable[it->first];
+		for(auto ref : stline.references){
+			size_t displ  = stline.value - ref->refPoint;
+			cout<<"DISPLACEMENT: "<<displ<<endl;
+			if(ref->refType == SymbolTable::ReferenceLocation::DIRECT){
+				string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
+				string byte4 = AssemblyInstruction::getByte(displ & 0xFF);
+				string replacement = byte3 + byte4;
+				sctnline.content.replace((ref->locationCounter*2 + 5), 3, replacement.substr(1));
+			}
+		}
+	}
 }

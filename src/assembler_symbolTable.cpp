@@ -103,7 +103,11 @@ void SymbolTable::printSymbolTable(){
 	cout<<"#symbtab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
 		SymbolTableLine stline = symbolTable[it->second];
-		cout<<stline.num<<" "<<stline.value<<" "<<stline.size<<" "<<stline.type<<" "<<stline.bind<<" "<<stline.ndx<<" "<<stline.name<<endl;
+		cout<<stline.num<<" "<<stline.value<<" "<<stline.size<<" "<<stline.type<<" "<<stline.bind<<" "<<stline.ndx<<" "<<stline.name<<" ";
+		for(auto ref : stline.references){
+			cout<<"{"<<ref->locationCounter<<", "<<ref->refType<<"}, ";
+		}
+		cout<<endl;
 	}
 	cout<<"#lookuptab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){

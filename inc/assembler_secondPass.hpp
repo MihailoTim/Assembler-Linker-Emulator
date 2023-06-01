@@ -138,6 +138,8 @@ public:
 
     static void writeReloContentToSection(string content);
 
+    static void fixSymbolReferences();
+
 	inline PassStatus getStatus(){return status;}
 
 	inline void setStatus(PassStatus s){status = s;}

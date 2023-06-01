@@ -271,7 +271,7 @@ string AssemblyInstruction::getIretBytes(AssemblyLine *line, size_t displ){
 	byte1 = 0x93;
 	byte2 = 0xF <<4 | 0xE;
 	byte3 = 0;
-	byte4 = 4;
+	byte4 = 8;
 	string row2 = get4Bytes(byte1, byte2, byte3, byte4);
 	return row1 + row2;
 }

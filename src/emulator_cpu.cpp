@@ -23,29 +23,28 @@ void CPU::emulate(size_t startdAddr){
 	Terminal::initialize();
 	while(ret == 0){
 		r[0] = 0;
-		// cout<<"CURRENT PC: "<<hex<<pc<<endl;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
-		// for(auto byte : line){
-		// 	cout<<hex<<setw(2)<<setfill('0')<<int(byte)<<" ";
-		// }
-		// cout<<endl;
 		pc+=4;
 		ret = emulateInstruction(line);
-		if(isTerminalInterruptEnabled() && isInterruptEnabled()){
-			Terminal::getChar();
-		}
 		Terminal::putChar();
+
 		if(ret == CAUSE_HALT){
 			break;
-		}
-		else if(ret == 0){
-			continue;
 		}
 		else if(ret == CAUSE_OPCODE){
 			throw new Exception("Opcode not recognized\n");
 		}
 		else{
+			if(isTerminalInterruptEnabled() && isInterruptEnabled()){
+				Terminal::getChar();
+			}
+			if(cause == 3){
+				executePush(status);
+				executePush(pc);
+				status |= 0x7;
+				pc = handler;
+			}
 			ret = 0;
 		}
 	}
@@ -69,7 +68,6 @@ size_t CPU::emulateInstruction(vector<uint8_t> bytes){
 
 size_t CPU::emulateHalt(const vector<uint8_t>& bytes) {
     if(bytes[0] == 0){
-		cout<<"HALT\n";
 		return CAUSE_HALT;
 	}
     return CAUSE_OPCODE;
@@ -77,7 +75,6 @@ size_t CPU::emulateHalt(const vector<uint8_t>& bytes) {
 
 size_t CPU::emulateInt(const vector<uint8_t>& bytes) {
     if(bytes[0] == 1<<4){
-		cout<<"INT\n";
 		executePush(status);
 		executePush(pc);
 		cause = 4;
@@ -97,15 +94,11 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	executePush(pc);
 
     if(bytes[0] == 0x20){
-		cout<<reg1<< " "<<reg2<<" "<<displ;
 		pc = reg1 + reg2 + displ;
-		cout<<"CALL TO: "<<pc<<endl;
 		return 0;
 	}
 	if(bytes[0] == 0x21){
-		cout<<reg1<< " "<<reg2<<" "<<displ;
 		pc = Memory::read4Bytes(reg1 + reg2 + displ);
-		cout<<"CALL TO: "<<pc<<endl;
 		return 0;
 	}
     return CAUSE_OPCODE;
@@ -129,13 +122,11 @@ size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
 		case 0x3b : if(reg2 > reg3) pc = Memory::read4Bytes(reg1 + displ); break;
 		default: return CAUSE_OPCODE;
 	}
-	// cout<<"BRANCH TO: "<<pc<<endl;
 	return 0;
 }
 
 size_t CPU::emulateXchg(const vector<uint8_t>& bytes) {
     if(bytes[0] == 0x40){
-		cout<<"XCHG\n";
 		size_t &reg1 = r[bytes[1] & 0xF];
 		size_t &reg2 = r[(bytes[2] >> 4) & 0xF];
 		size_t tmp = reg1;
@@ -195,26 +186,19 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
 	switch (bytes[0]){
-		case 0x90 : cout<<"CSRRD\n"; reg1 = sreg2; break;
-		case 0x91 : cout<<"LD\n"; reg1 = reg2 + displ; break;
+		case 0x90 : reg1 = sreg2; break;
+		case 0x91 : reg1 = reg2 + displ; break;
 		case 0x92 : {
-			// cout<<"LD\n";
-			// cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
-		case 0x93 :{
-			cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
-			cout<<"POP\n"<< " "<<sp<<endl;
-			cout<<"LD\n"; reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
-
-		} 
-		case 0x94 : cout<<"CSRWR\n"; sreg1 = reg2; cout<<status<<endl;break;
-		case 0x95 : cout<<"SET CSR\n"; sreg1 = sreg2 | displ; break;
-		case 0x96 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
-		case 0x97 : cout<<"CSRWR\n"; sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x93 :reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x94 :sreg1 = reg2; break;
+		case 0x95 : sreg1 = sreg2 | displ; break;
+		case 0x96 : sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
+		case 0x97 : sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
 		default: return CAUSE_OPCODE;
 	}
-    return 0; // Placeholder return value
+    return 0;
 }
 
 size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
@@ -225,18 +209,11 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
     switch(bytes[0]){
 		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
-		case 0x81 : {
-			// cout<<reg1<<" "<<reg3<<" "<<displ<<endl;
-			reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
-		}
-		case 0x82 : {
-			// cout<<reg1<<" "<<reg2<<" "<<reg3<<" "<<displ<<endl;
-			Memory::write4Bytes(Memory::read4Bytes(reg1+reg2+displ), reg3); break;
-		}
+		case 0x81 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
+		case 0x82 : Memory::write4Bytes(Memory::read4Bytes(reg1+reg2+displ), reg3); break;
 		default: return CAUSE_OPCODE;
 	}
-	// cout<<"STORE"<<endl;
-    return 0; // Placeholder return value
+    return 0; 
 }
 
 void CPU::printRegisterFile(){
@@ -256,6 +233,6 @@ void CPU::printRegisterFile(){
 
 size_t CPU::executePush(size_t value){
 	sp-=4;
-	Memory::write4Bytes(sp, pc);
+	Memory::write4Bytes(sp, value);
 	return sp;
 }

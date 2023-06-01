@@ -1,5 +1,6 @@
 #include "../inc/emulator_terminal.hpp"
 #include "../inc/emulator_memory.hpp"
+#include "../inc/emulator_cpu.hpp"
 
 termios Terminal::settings;
 termios Terminal::previousSettings;
@@ -27,6 +28,7 @@ void Terminal::getChar(){
 	size_t bytes = read(fileno(stdin), &c, 1);
 	if(bytes == 1){
 		Memory::write4Bytes(term_in, c);
+		CPU::cause = 3;
 	}
 }
 

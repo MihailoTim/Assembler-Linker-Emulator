@@ -68,7 +68,9 @@ void LiteralPool::updateSymbolTable(size_t startingPoint){
 }
 
 void LiteralPool::updateForwardBranches(string &content, size_t startingPoint){
+	cout<<"UPDATING FORWARD BRANCHES: "<<endl;
 	for(auto it = forwardBranches.begin(); it!=forwardBranches.end();it++){
+		cout<<it->first<<" "<<it->second<<endl;
 		if(it->first + it->second > startingPoint && it->first < startingPoint){
 			size_t displ  = it->second + currentAddend;
 			string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
