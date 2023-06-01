@@ -1,18 +1,9 @@
-jmp init
-.skip 20
-init:
-not %r1 # r1 = -1
-sub %r1, %r2 # r2 = 1
-add %r2, %r3 # r3 = 1
-shl %r3, %r3 # r3 = 2
-push %r3
-call function
-pop %r6
+wait_for_click:
+ld 0xFFFFFF04, %r1
+beq %r1, %r0, wait_for_click
+echo:
+st %r1, 0xFFFFFF00
+st %r0, 0xFFFFFF04
+jmp wait_for_click
 halt
-function:
-not %r7 # r1 = -1
-sub %r7, %r8 # r2 = 1
-add %r8, %r9 # r3 = 1
-shl %r9, %r9 # r3 = 2
-ret
 .end

@@ -148,12 +148,26 @@ string AssemblyInstruction::getLoadBytes(AssemblyLine *line, size_t displ){
 		byte4 = 0;
 	}
 	if(line->mnemonic == "ld"){
-		if(line->args[0]->addrType == AddressType::IMMED || line->args[0]->addrType == AddressType::MEMDIR){
+		if(line->args[0]->addrType == AddressType::IMMED){
 			byte1 = 0x92;
 			byte2 = line->args[1]->intVal << 4 | 0xF;
 			byte3 = (displ >> 8) & 0xF;
 			byte4 = displ & 255;
 			return get4Bytes(byte1, byte2, byte3, byte4);
+		}
+		if(line->args[0]->addrType == AddressType::MEMDIR){
+			byte1 = 0x92;
+			byte2 = line->args[1]->intVal << 4 | 0xF;
+			byte3 = (displ >> 8) & 0xF;
+			byte4 = displ & 255;
+			string inst1 = get4Bytes(byte1, byte2, byte3, byte4);
+
+			byte1 = 0x92;
+			byte2 = line->args[1]->intVal << 4 | line->args[1]->intVal;
+			byte3 = 0;
+			byte4 = 0;
+			string inst2 = get4Bytes(byte1, byte2, byte3, byte4);
+			return inst1 + inst2;
 		}
 		if(line->args[0]->addrType == AddressType::REGDIR){
 			byte1 = 0x91;

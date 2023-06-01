@@ -1,6 +1,7 @@
 #include "../inc/emulator_cpu.hpp"
 #include "../inc/emulator_memory.hpp"
 #include "../inc/emulator_exceptions.hpp"
+#include "../inc/emulator_terminal.hpp"
 #include <iomanip>
 #include <algorithm>
 
@@ -19,17 +20,20 @@ void CPU::emulate(size_t startdAddr){
 	pc = startdAddr;
 	sp = STACK_BASE;
 	size_t ret = 0;
+	Terminal::initialize();
 	while(ret == 0){
 		r[0] = 0;
-		cout<<"CURRENT PC: "<<hex<<pc<<endl;
+		// cout<<"CURRENT PC: "<<hex<<pc<<endl;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
-		for(auto byte : line){
-			cout<<hex<<setw(2)<<setfill('0')<<int(byte)<<" ";
-		}
-		cout<<endl;
+		// for(auto byte : line){
+		// 	cout<<hex<<setw(2)<<setfill('0')<<int(byte)<<" ";
+		// }
+		// cout<<endl;
 		pc+=4;
 		ret = emulateInstruction(line);
+		Terminal::getChar();
+		Terminal::putChar();
 		if(ret == CAUSE_HALT){
 			break;
 		}
@@ -82,12 +86,6 @@ size_t CPU::emulateInt(const vector<uint8_t>& bytes) {
     return CAUSE_OPCODE;
 }
 
-size_t CPU::emulateIret(const vector<uint8_t>& bytes) {
-    // Implementation for emulateIret
-    // ...
-    return 0; // Placeholder return value
-}
-
 size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 	size_t reg1 = r[(bytes[1] >> 4) & 0xF];
 	size_t reg2 = r[bytes[1] & 0xF];
@@ -118,15 +116,9 @@ size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
 	size_t reg3 = r[(bytes[2] >> 4) & 0xF];
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
-	cout<<"DISPLACEMENT: "<<dec<<displ<<endl;
-	cout<<reg2<<" "<<reg3<<endl;
 	switch(bytes[0]){
 		case 0x30 : pc = reg1 + displ; break;
-		case 0x31 :{
-			cout<<reg2<<" "<<reg3<<endl;
-		 if(reg2 == reg3) pc = reg1 + displ; break;
-
-		}
+		case 0x31 : if(reg2 == reg3) pc = reg1 + displ; break;
 		case 0x32 : if(reg2 != reg3) pc = reg1 + displ; break;
 		case 0x33 : if(reg2 > reg3) pc = reg1 + displ; break;
 		case 0x38 : pc = Memory::read4Bytes(reg1 + displ);
@@ -135,14 +127,8 @@ size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
 		case 0x3b : if(reg2 > reg3) pc = Memory::read4Bytes(reg1 + displ); break;
 		default: return CAUSE_OPCODE;
 	}
-	cout<<"BRANCH TO: "<<pc<<endl;
+	// cout<<"BRANCH TO: "<<pc<<endl;
 	return 0;
-}
-
-size_t CPU::emulateRet(const vector<uint8_t>& bytes) {
-    // Implementation for emulateRet
-    // ...
-    return 0; // Placeholder return value
 }
 
 size_t CPU::emulateXchg(const vector<uint8_t>& bytes) {
@@ -209,8 +195,9 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 	switch (bytes[0]){
 		case 0x90 : cout<<"CSRRD\n"; reg1 = sreg2; break;
 		case 0x91 : cout<<"LD\n"; reg1 = reg2 + displ; break;
-		case 0x92 : cout<<"LD\n";{
-			cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
+		case 0x92 : {
+			// cout<<"LD\n";
+			// cout<<reg1 << " "<<reg2<<" "<<reg3<<" "<<displ<<endl;
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
 		case 0x93 :{
@@ -237,16 +224,16 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
     switch(bytes[0]){
 		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
 		case 0x81 : {
-			cout<<reg1<<" "<<reg3<<" "<<displ<<endl;
+			// cout<<reg1<<" "<<reg3<<" "<<displ<<endl;
 			reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
 		}
 		case 0x82 : {
-			cout<<reg1<<" "<<reg2<<" "<<reg3<<" "<<displ<<endl;
+			// cout<<reg1<<" "<<reg2<<" "<<reg3<<" "<<displ<<endl;
 			Memory::write4Bytes(Memory::read4Bytes(reg1+reg2+displ), reg3); break;
 		}
 		default: return CAUSE_OPCODE;
 	}
-	cout<<"STORE"<<endl;
+	// cout<<"STORE"<<endl;
     return 0; // Placeholder return value
 }
 
@@ -254,7 +241,7 @@ void CPU::printRegisterFile(){
 	cout << right;
 
     for (int i = 0; i < 16; ++i) {
-        cout << "r" <<dec<< i << "=" << std::setw(10) << std::setfill('0') << std::hex << r[i] << " ";
+        cout << "r" <<dec<< i << "=" << std::setw(8) << std::setfill('0') << std::hex << (r[i] & 0xFFFFFFFF) << " ";
         if ((i + 1) % 4 == 0) {
             cout << endl;
         }
@@ -268,4 +255,5 @@ void CPU::printRegisterFile(){
 size_t CPU::executePush(size_t value){
 	sp-=4;
 	Memory::write4Bytes(sp, pc);
+	return sp;
 }
