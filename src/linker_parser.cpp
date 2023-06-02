@@ -1,10 +1,33 @@
 #include "../inc/linker_parser.hpp"
 #include "../inc/linker_sectionTable.hpp"
+#include "../inc/linker_relocationTable.hpp"
+#include <iomanip>
 
 using namespace std;
 
 Parser::CurrentlyReading Parser::status = NOTHING;
 string Parser::currentSection = "";
+string Parser::sectionContent = "";
+vector<SymbolTable::SymbolTableLine*> Parser::localSymbolTable;
+map<string, string> Parser::localSectionContent;
+vector<RelocationTable::RelocationTableLine*> Parser::localReloTable;
+
+string getByte(uint8_t byte){
+	string result="";
+	std::stringstream sstream;
+	sstream << setw(2) << setfill('0') << std::hex << int(byte);
+	result = sstream.str();
+	return result;
+}
+
+string get4Bytes(int bytes){
+    uint8_t byte1 = (bytes >> 24) & 0xFF;
+    uint8_t byte2 = (bytes >> 16) & 0xFF;
+    uint8_t byte3 = (bytes >> 8) & 0xFF;
+    uint8_t byte4 = bytes & 0xFF;
+
+	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
+}
 
 void Parser::parseFile(char *fileIn){
 	string line;
@@ -30,10 +53,54 @@ void Parser::parseFile(char *fileIn){
 				case SECTIONHEADER : handleSectionLine(line); break;
 				case SECTIONCONTENT : handleSectionContent(line); break;
 				case SYMBOLTABLE : handleSymbolTableLine(line);break;
+				case RELOCATIONS : handleRelocationLine(line);break;
 			}
 		}
 	}
+
+	for(auto stline : localSymbolTable){
+		size_t n = SymbolTable::symbolTable.size();
+		string section = stline->ndx >= 0 ? localSymbolTable[stline->ndx]->name : "";
+		SymbolTable::insertNewSymbol(n, stline->value, 0, stline->type, stline->bind, stline->ndx, stline->name, section);
+	}
+	localSymbolTable.clear();
+
+	for(auto reloLine : localReloTable){
+		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[reloLine->symbol];
+		size_t replacement = stline->value + reloLine->addend;
+		string bytes = get4Bytes(replacement);
+		cout<<"REPLACEMENT BYTES: "<<bytes<<endl;
+		localSectionContent[reloLine->section].replace(reloLine->location*2, 8, bytes);
+		cout<<reloLine->location<<" "<<reloLine->symbol<<" "<<reloLine->section<<" "<<stline->value<<endl;
+	}
+
+	for(auto it = localSectionContent.begin(); it!=localSectionContent.end();it++){
+		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it->first];
+		sctnline->content = it->second;
+
+		string res = "";
+		cout<<"SECTION: "<<it->first<<endl;
+		for(int i=0;i<sctnline->content.size();i++){
+			if(i%2 == 0 && i!=0){
+				res+=" ";
+			}
+			if(i%8 == 0 && i!=0){
+				res+=" ";
+			}
+			if(i%16 == 0 && i!=0){
+				res+="\n";
+			}
+			res+=sctnline->content[i];
+		}
+		cout<<res<<endl;
+	}
 	status = NOTHING;
+	localSymbolTable.clear();
+
+	SectionTable::printAllSections();
+
+	sectionContent = "";
+	currentSection = "";
 }
 
 
@@ -62,22 +129,21 @@ void Parser::handleSectionLine(string line){
 	size_t length = stol(line.substr(0, delim2));
 	line = line.substr(delim2+1);
 	string section = line;
-	currentSection = section;
-	SectionTable::addNewSection(section);
+
+	SectionTable::addNewSection(section, length);
 }
 
 void Parser::handleSectionContent(string line){
 	string strippedLine = "";
 	if(line.size()){
-		line = line.substr(10);
 		for(char c : line){
-			if(c != ' '){
+			if(c != ' ' && c!='\n'){
 				strippedLine+=c;
 			}
 		}
 	}
-	SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[currentSection];
-	cout<<strippedLine<<endl;
+
+	localSectionContent[currentSection] += strippedLine;
 }
 
 void Parser::handleSymbolTableLine(string line){
@@ -85,21 +151,42 @@ void Parser::handleSymbolTableLine(string line){
 	size_t num = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t offset = stol(line.substr(0, delim));
+	size_t value = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
 	size_t size = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t type = stol(line.substr(0, delim));
+	SymbolTable::SymbolType type = (SymbolTable::SymbolType)stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t bind = stol(line.substr(0, delim));
+	SymbolTable::SymbolBind bind = (SymbolTable::SymbolBind)stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t ndx = stol(line.substr(0, delim));
+	int ndx = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	string name = line;
 
-	cout<<ndx<<" "<<name<<endl;
+	SymbolTable::SymbolTableLine *stline = new SymbolTable::SymbolTableLine(num, value, 0, type, bind, ndx, name);
+
+	localSymbolTable.push_back(stline);
+}
+
+void Parser::handleRelocationLine(string line){
+	size_t delim = line.find(" ");
+	size_t location = stol(line.substr(0, delim));
+	line = line.substr(delim+1);
+	delim = line.find(" ");
+	string type = line.substr(0, delim);
+	line = line.substr(delim+1);
+	delim = line.find(" ");
+	size_t symbolIndex = stol(line.substr(0, delim));
+	line = line.substr(delim+1);
+	delim = line.find(" ");
+	size_t addend = stol(line.substr(0, delim));
+	line = line.substr(delim+1);
+
+	string symbol = localSymbolTable[symbolIndex]->name;
+
+	localReloTable.push_back(new RelocationTable::RelocationTableLine(location, type, symbol, addend, currentSection));
 }

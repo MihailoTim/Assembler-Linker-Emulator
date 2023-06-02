@@ -11,7 +11,7 @@ using namespace std;
 
 class SymbolTable{
 public:
-	enum SymbolSection{GLOBAL=-1, UNDEFINED=0};
+	enum SymbolSection{EXTERN=-2, GLOBAL=-1, UNDEFINED=0};
 	enum SymbolBind{LOC, GLOB, UNBOUND};
 	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
 	enum ReferenceLocation{DIRECT, INDIRECT};

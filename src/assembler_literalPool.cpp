@@ -72,7 +72,7 @@ void LiteralPool::updateForwardBranches(string &content, size_t startingPoint){
 	for(auto it = forwardBranches.begin(); it!=forwardBranches.end();it++){
 		cout<<it->first<<" "<<it->second<<endl;
 		if(it->first + it->second > startingPoint && it->first < startingPoint){
-			size_t displ  = it->second + currentAddend;
+			int displ  = it->second + currentAddend;
 			string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
 			string byte4 = AssemblyInstruction::getByte(displ & 0xFF);
 			string replacement = byte3 + byte4;

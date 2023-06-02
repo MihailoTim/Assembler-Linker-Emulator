@@ -13,6 +13,7 @@ string SecondPass::sectionContent = "";
 vector<string> SecondPass::reloTableContent;
 
 void SecondPass::performBetweenPassCheck(){
+	symbolTable->printSymbolTable();
 	map<string, SymbolTable::SymbolTableLine> symTab = symbolTable->symbolTable;
 	for(auto stline : symTab){
 		if(stline.second.ndx == SymbolTable::SymbolSection::GLOBAL || stline.second.bind == SymbolTable::SymbolBind::UNBOUND){
@@ -75,6 +76,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 	LiteralPool::printLiteralPool();
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	sctnline.length = locationCounter - sctnline.base;
+	cout<<currentSection<<endl;
 	fixSymbolReferences();
 	fixReloTable();
 	LiteralPool::changeSection();
@@ -116,8 +118,11 @@ void SecondPass::handleSkipDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleAsciiDirective(AssemblyLine* line){
-	sectionContent += line->args[0]->stringVal;
-	locationCounter += line->args[0]->stringVal.size();
+	string str = line->args[0]->stringVal;
+	for(char c : str){
+		sectionContent += AssemblyInstruction::getByte(c);
+	}
+	locationCounter += str.size();
 }
 
 void SecondPass::handleEquDirective(AssemblyLine* line){
@@ -461,9 +466,11 @@ void SecondPass::fixSymbolReferences(){
 	for(auto it = symbolTable->symbolTable.begin(); it!=symbolTable->symbolTable.end();it++){
 		SymbolTable::SymbolTableLine &stline = symbolTable->symbolTable[it->first];
 		for(auto ref : stline.references){
-			size_t displ  = stline.value - ref->refPoint;
+			int displ  = stline.value - ref->refPoint;
 			cout<<"DISPLACEMENT: "<<displ<<endl;
 			cout<<stline.name<<stline.value<<ref->refPoint<<endl;
+			cout<<sctnline.content.size()<<endl;
+			cout<<currentSection<<endl;
 			if(ref->refType == SymbolTable::ReferenceLocation::DIRECT){
 				string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
 				string byte4 = AssemblyInstruction::getByte(displ & 0xFF);
@@ -471,6 +478,7 @@ void SecondPass::fixSymbolReferences(){
 				sctnline.content.replace((ref->locationCounter*2 + 5), 3, replacement.substr(1));
 			}
 		}
+		stline.references.clear();
 	}
 }
 

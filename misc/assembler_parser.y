@@ -506,7 +506,7 @@ lastLine:
         currentLine->mnemonic = ".end";
         firstPass.handleEndDirective();
         isEnd = true;
-    };
+    }
 %%
 
 void yyerror(const char *s) 

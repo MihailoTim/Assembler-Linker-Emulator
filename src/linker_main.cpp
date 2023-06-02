@@ -2,6 +2,7 @@
 #include <string>
 #include "../inc/linker_exceptions.hpp"
 #include "../inc/linker_parser.hpp"
+#include "../inc/linker_symbolTable.hpp"
 using namespace std;
 
 char *fileOut;
@@ -29,5 +30,6 @@ int main(int argc, char** argv) {
 				i++;
 			}
 		}
+	SymbolTable::printSymbolTable();
 	return 0;
 }

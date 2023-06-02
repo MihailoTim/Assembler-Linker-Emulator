@@ -4,6 +4,8 @@
 void SymbolTable::handleGlobalDirective(string symbol){
 	if(symbolTable.count(symbol)){
 		SymbolTableLine &stline = symbolTable[symbol];
+		if(stline.ndx == SymbolSection::EXTERN)
+			throw new Exception("Conflicting directive for symbol:" + stline.name);
 		if(stline.bind != SymbolBind::UNBOUND)
 			stline.bind = SymbolBind::GLOB;
 		stline.global = true;
@@ -20,7 +22,7 @@ void SymbolTable::handleExternDirective(string symbol){
 		throw new Exception("Multiple definitions of symbol " + symbol);
 	}
 	else{
-		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::GLOB, SymbolSection::UNDEFINED, symbol);
+		SymbolTableLine *stline = handleNewSymbol(this->count++, 0, 0,SymbolType::NOTYPE, SymbolBind::GLOB, SymbolSection::EXTERN, symbol);
 		symbolTable.insert(make_pair(symbol, *stline));
 	}
 }
@@ -178,36 +180,17 @@ void SymbolTable::printSection(string section, ofstream &out){
 	out<<res;
 	res="";
 	for(int i=0;i<sctnline.content.size();i++){
-		if(i%16 == 0 && i!= 0){
-			for(int j=3;j>=0;j--){
-				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
-			}
-			for(int j=7;j>=4;j--){
-				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
-			}
-			res="";
-			out<<" ";
+		if(i%2 == 0 && i!=0){
+			res+=" ";
 		}
 		if(i%16 == 0 && i!=0){
-			out<<"\n";
+			res+="\n";
 		}
-		// if(i%16 == 0){
-		// 	out<<std::setw(8)<<std::setfill('0')<<hex<<(i/2)<<": ";
-		// }
 		res+=sctnline.content[i];
 	}
-	if(res.size() % 16 != 0){
-		for(int i=7 - (res.size()%16)/2;i>=0;i--){
-			res += "00";
-		}
-		for(int j=3;j>=0;j--){
-			out<<res.substr(j*2, 2)<< " ";
-		}
-		for(int j=7;j>=4;j--){
-			out<<res.substr(j*2, 2)<<" ";
-		}
-	}
-	out<< "\n#.rela." + sctnline.name + "\n";
+	if(res.size())
+		out<<res<<endl;
+	out<< "#.rela." + sctnline.name + "\n";
 	for(int i=0;i<sctnline.reloTable.size();i++){
 		out<< sctnline.reloTable[i] + "\n";
 	}
@@ -239,33 +222,29 @@ void SymbolTable::printSectionHexOnly(string section, ofstream &out){
 	out<<res;
 	res="";
 	for(int i=0;i<sctnline.content.size();i++){
-		if(i%16 == 0 && i!= 0){
+		if(res.size() == 16){
 			for(int j=3;j>=0;j--){
-				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
+				out<<res.substr(j*2, 2)<<" ";
 			}
 			for(int j=7;j>=4;j--){
-				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
+				out<<res.substr(j*2, 2)<< (j==4 ? "\n" : " ");
 			}
 			res="";
-			out<<" ";
-		}
-		if(i%16 == 0 && i!=0){
-			out<<"\n";
-		}
-		if(i%16 == 0){
-			out<<std::setw(8)<<std::setfill('0')<<hex<<(i/2)<<": ";
 		}
 		res+=sctnline.content[i];
+	}
+	if(res.size()){
+		for(int j=min(3,int(res.size()/2));j>=0;j--){
+			out<<res.substr(j*2, 2)<<" ";
+		}
+		for(int j=min(7,int(res.size()/2-4));j>=4;j--){
+			out<<res.substr(4+j*2, 2)<< (j==4 ? "": " ");
+		}
+		out<<endl;
 	}
 	if(res.size() % 16 != 0){
 		for(int i=7 - (res.size()%16)/2;i>=0;i--){
 			res += "00";
-		}
-		for(int j=3;j>=0;j--){
-			out<<res.substr(j*2, 2)<< " ";
-		}
-		for(int j=7;j>=4;j--){
-			out<<res.substr(j*2, 2)<<" ";
 		}
 	}
 	out<<endl;

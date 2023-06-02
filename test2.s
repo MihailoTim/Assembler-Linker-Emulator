@@ -1,10 +1,12 @@
-.section data
-labe1:
-.skip 100
-label3:
+.extern b
+.global g
+.global l
+.global a
+.extern h
+l:
 .section text
-.skip 20
-label2:
-.skip 30
-halt
+.skip 13
+a:
+.skip 10
+g:
 .end

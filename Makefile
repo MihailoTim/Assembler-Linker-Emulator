@@ -36,10 +36,12 @@ clean:
 	rm -rf tmp
 	rm -f *.hex
 	rm -f asembler *.o
+	rm -f linker *.o
 	rm -f emulator *.o
 
 all: assembler
 	make clean
 	make assembler
+	make linker
 	make emulator
 
