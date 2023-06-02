@@ -31,7 +31,7 @@ void checkArguments(int argc, char **argv){
 		}
 		else if(strcmp(argv[2], "-o") == 0){
 			fileOut = argv[3];
-			fileIn = argv[2];
+			fileIn = argv[1];
 		}
 		else 
 			throw new Exception("Can't parse input arguments");
@@ -46,8 +46,10 @@ int main(int argc, char** argv) {
 
 	FirstPass &firstPass = FirstPass::getInstance();
 	SecondPass &secondPass = SecondPass::getInstance();
+	secondPass.setOutputFile(fileOut);
 
 	FILE* file = fopen(fileIn, "r");
+	cout<<fileIn<<endl;
 	if(file) {
 		yyin = file;
 		yyparse();

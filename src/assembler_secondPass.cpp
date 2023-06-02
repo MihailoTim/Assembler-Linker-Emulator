@@ -450,10 +450,10 @@ void SecondPass::writeReloContentToSection(string content)
 }
 
 void SecondPass::dumpContentToFile(){
-	ofstream out("./binary.hex");
-	symbolTable->printAllSections(out);
-	// symbolTable->printSymbolTable(out);
-	// symbolTable->printSectionTable(out);
+	symbolTable->printAllSectionsHexOnly();
+	symbolTable->printSectionTable(objectFile);
+	symbolTable->printSymbolTable(objectFile);
+	symbolTable->printAllSections(objectFile);
 }
 
 void SecondPass::fixSymbolReferences(){
@@ -463,6 +463,7 @@ void SecondPass::fixSymbolReferences(){
 		for(auto ref : stline.references){
 			size_t displ  = stline.value - ref->refPoint;
 			cout<<"DISPLACEMENT: "<<displ<<endl;
+			cout<<stline.name<<stline.value<<ref->refPoint<<endl;
 			if(ref->refType == SymbolTable::ReferenceLocation::DIRECT){
 				string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
 				string byte4 = AssemblyInstruction::getByte(displ & 0xFF);

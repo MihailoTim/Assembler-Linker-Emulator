@@ -116,15 +116,15 @@ void SymbolTable::printSymbolTable(){
 }
 
 void SymbolTable::printSymbolTable(ofstream &out){
-	out<<"#symbtab"<<endl;
+	out<<"#symtab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
 		SymbolTableLine stline = symbolTable[it->second];
 		out<<stline.num<<" "<<stline.value<<" "<<stline.size<<" "<<stline.type<<" "<<stline.bind<<" "<<stline.ndx<<" "<<stline.name<<endl;
 	}
-	out<<"#lookuptab"<<endl;
-	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
-		out<<it->first<<" " <<it->second<<endl;
-	}
+	// out<<"#lookuptab"<<endl;
+	// for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
+	// 	out<<it->first<<" " <<it->second<<endl;
+	// }
 }
 
 void SymbolTable::printSectionTable(){
@@ -136,7 +136,7 @@ void SymbolTable::printSectionTable(){
 }
 
 void SymbolTable::printSectionTable(ofstream &out){
-	out<<"#sectiontab"<<endl;
+	out<<"#shdr"<<endl;
 	for(auto it = sectionTable.begin(); it!=sectionTable.end();it++){
 		SectionTableLine stline = it->second;
 		out<<stline.base<<" "<<stline.length<<" "<<stline.name<<endl;
@@ -169,14 +169,74 @@ void SymbolTable::printSection(string section){
 	for(int i=0;i<sctnline.reloTable.size();i++){
 		res += sctnline.reloTable[i] + "\n";
 	}
-	cout<<res<<endl;
 }
 
 void SymbolTable::printSection(string section, ofstream &out){
 	SectionTableLine sctnline = sectionTable[section];
 	string res = "";
+	res += "#" + sctnline.name + "\n";
+	out<<res;
+	res="";
+	for(int i=0;i<sctnline.content.size();i++){
+		if(i%16 == 0 && i!= 0){
+			for(int j=3;j>=0;j--){
+				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
+			}
+			for(int j=7;j>=4;j--){
+				out<<res.substr(j*2, 2)<< (i%16 == 0 ? " " : " ");
+			}
+			res="";
+			out<<" ";
+		}
+		if(i%16 == 0 && i!=0){
+			out<<"\n";
+		}
+		// if(i%16 == 0){
+		// 	out<<std::setw(8)<<std::setfill('0')<<hex<<(i/2)<<": ";
+		// }
+		res+=sctnline.content[i];
+	}
+	if(res.size() % 16 != 0){
+		for(int i=7 - (res.size()%16)/2;i>=0;i--){
+			res += "00";
+		}
+		for(int j=3;j>=0;j--){
+			out<<res.substr(j*2, 2)<< " ";
+		}
+		for(int j=7;j>=4;j--){
+			out<<res.substr(j*2, 2)<<" ";
+		}
+	}
+	out<< "\n#.rela." + sctnline.name + "\n";
+	for(int i=0;i<sctnline.reloTable.size();i++){
+		out<< sctnline.reloTable[i] + "\n";
+	}
+}
+
+void SymbolTable::printAllSections(){
+	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
+		printSection(it->first);
+	}
+}
+
+void SymbolTable::printAllSections(ofstream& out){
+	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
+		printSection(it->first, out);
+	}
+}
+
+void SymbolTable::printAllSectionsHexOnly(){
+	ofstream out("debug.hex");
+	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
+		printSectionHexOnly(it->first, out);
+	}
+}
+
+void SymbolTable::printSectionHexOnly(string section, ofstream &out){
+	SectionTableLine sctnline = sectionTable[section];
+	string res = "";
 	// res += "#" + sctnline.name + "\n";
-	// out<<res;
+	out<<res;
 	res="";
 	for(int i=0;i<sctnline.content.size();i++){
 		if(i%16 == 0 && i!= 0){
@@ -197,33 +257,16 @@ void SymbolTable::printSection(string section, ofstream &out){
 		}
 		res+=sctnline.content[i];
 	}
-	cout<<res.size()<<endl;
-	cout<<res<<endl;
 	if(res.size() % 16 != 0){
 		for(int i=7 - (res.size()%16)/2;i>=0;i--){
 			res += "00";
 		}
+		for(int j=3;j>=0;j--){
+			out<<res.substr(j*2, 2)<< " ";
+		}
+		for(int j=7;j>=4;j--){
+			out<<res.substr(j*2, 2)<<" ";
+		}
 	}
-	for(int j=3;j>=0;j--){
-		out<<res.substr(j*2, 2)<< " ";
-	}
-	for(int j=7;j>=4;j--){
-		out<<res.substr(j*2, 2)<<" ";
-	}
-	// out<< "\n#.rela." + sctnline.name + "\n";
-	// for(int i=0;i<sctnline.reloTable.size();i++){
-	// 	out<< sctnline.reloTable[i] + "\n";
-	// }
-}
-
-void SymbolTable::printAllSections(){
-	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
-		printSection(it->first);
-	}
-}
-
-void SymbolTable::printAllSections(ofstream& out){
-	for(auto it = sectionTable.begin(); it!=sectionTable.end(); it++){
-		printSection(it->first, out);
-	}
+	out<<endl;
 }

@@ -142,6 +142,8 @@ public:
 
     static void fixReloTable();
 
+    void setOutputFile(char *fileOut){objectFile.open(fileOut);}
+
 	inline PassStatus getStatus(){return status;}
 
 	inline void setStatus(PassStatus s){status = s;}
@@ -149,6 +151,7 @@ public:
     friend class LiteralPool;
 private:
 	AssemblyFile *file;
+    ofstream objectFile;
 	static SymbolTable *symbolTable;
     static RelocationTable *reloTable;
 	PassStatus status;

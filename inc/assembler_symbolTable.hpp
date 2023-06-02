@@ -43,10 +43,13 @@ public:
 
 	void printSection(string section);
 	void printSection(string section, ofstream &out);
+	void printSectionHexOnly(string section, ofstream &out);
 
 	void printAllSections(ofstream &out);
+
 	void printAllSections();
 
+	void printAllSectionsHexOnly();
 	friend class SecondPass;
 	friend class RelocationTable;
 	friend class LiteralPool;
