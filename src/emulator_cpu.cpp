@@ -24,6 +24,9 @@ void CPU::emulate(size_t startdAddr){
 	size_t ret = 0;
 	Terminal::initialize();
 	while(ret == 0){
+		if(pc == 0x48){
+			// cout<<"NOW IN INTERRUPT ROUTINE"<<endl;
+		}
 		r[0] = 0;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
@@ -97,10 +100,12 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 
     if(bytes[0] == 0x20){
 		pc = reg1 + reg2 + displ;
+		// cout<<"CALL TO: "<<hex<<pc<<endl;
 		return 0;
 	}
 	if(bytes[0] == 0x21){
 		pc = Memory::read4Bytes(reg1 + reg2 + displ);
+		// cout<<"CALL TO: "<<hex<<pc<<endl;
 		return 0;
 	}
     return CAUSE_OPCODE;
@@ -194,7 +199,7 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
 		case 0x93 :reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
-		case 0x94 :sreg1 = reg2; break;
+		case 0x94 :cout<<"CSRWR: "<<reg2<<endl; sreg1 = reg2; break;
 		case 0x95 : sreg1 = sreg2 | displ; break;
 		case 0x96 : sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		case 0x97 : sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;

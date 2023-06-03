@@ -6,6 +6,7 @@ vector<string> Reader::readFile(ifstream &in){
 	string strippedLine;
 
 	while(getline(in, line)){
+		size_t address = stol(line.substr(0,6));
 		strippedLine = line.substr(6);
 		size_t pos = strippedLine.find(" ");
 		while (pos != std::string::npos) {

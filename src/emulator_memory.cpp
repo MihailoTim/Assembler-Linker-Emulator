@@ -11,6 +11,7 @@ void Memory::loadIntoMemory(ifstream& in){
 	while(getline(in, line)){
 		// try{
 			size_t address = stoi(line.substr(0,8), nullptr, 16);
+			cout<<address<<endl;
 			strippedLine = line.substr(10);
 			size_t pos = strippedLine.find(" ");
 			while (pos != std::string::npos) {

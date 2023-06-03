@@ -1,0 +1,28 @@
+#shdr
+0 0 
+0 80 my_handler
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 -2 isr_timer
+2 0 0 0 1 -2 isr_terminal
+3 0 0 0 1 4 handler
+4 0 0 1 0 4 my_handler
+5 44 0 0 0 4 handle_timer
+6 52 0 0 0 4 handle_terminal
+7 28 0 0 0 4 finish
+#
+#.rela.
+#my_handler
+81 e0 1f fc 81 e0 2f fc 
+90 12 00 00 92 2f 00 30 
+31 f1 20 18 92 2f 00 2c 
+31 f1 20 18 93 2e 00 04 
+93 1e 00 04 96 0e 00 04 
+93 fe 00 08 21 f0 00 18 
+30 f0 0f e8 21 f0 00 14 
+30 f0 0f e0 30 f0 00 10 
+00 00 00 02 00 00 00 03 
+00 00 00 00 00 00 00 00
+#.rela.my_handler
+72 R_32 1 0
+76 R_32 2 0

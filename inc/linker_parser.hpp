@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <iomanip>
 #include "../inc/linker_symbolTable.hpp"
 #include "../inc/linker_relocationTable.hpp"
 
@@ -31,6 +32,10 @@ public:
 	static void handleSymbolTableLine(string line);
 
 	static void handleRelocationLine(string line);
+
+	static string getByte(uint8_t byte);
+
+	static string get4Bytes(int bytes);
 };
 
 #endif

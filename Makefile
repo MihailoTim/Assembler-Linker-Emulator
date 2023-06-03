@@ -19,13 +19,12 @@ tmp/lexer.cpp tmp/lexer.h: misc/assembler_lexer.lex | tmp
 	cd tmp && flex -o lexer.cpp --header-file=lexer.h ../misc/assembler_lexer.lex
 
 assembler: tmp/bison.cpp tmp/lexer.cpp src/assembler_main.cpp | tmp
-	rm -f *.hex
-	rm -f asembler *.o
+	rm -f asembler
 	g++ -o asembler $(asssemblerSource) $(assemblerHeader) tmp/*.cpp
 	sudo rm -r ./tmp
 
 emulator: src/emulator_main.cpp
-	rm -f emulator *.o
+	rm -f emulator
 	g++ -o emulator $(emulatorSource) $(emulatorHeader)
 
 linker: src/linker_main.cpp

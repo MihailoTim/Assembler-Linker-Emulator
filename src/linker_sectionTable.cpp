@@ -7,12 +7,12 @@ size_t SectionTable::totalSize = 0;
 void SectionTable::addNewSection(string name, size_t length){
 	if(sectionTable.count(name) == 0){
 		SectionTableLine *sctnline = new SectionTableLine(name, totalSize);
-		totalSize += length;
 		sectionTable.insert(make_pair(name, sctnline));
 		int ndx = SymbolTable::symbolTable.size();
-		SymbolTable::SymbolTableLine *stline = new SymbolTable::SymbolTableLine(ndx, 0, 0, SymbolTable::SymbolType::SCTN, SymbolTable::SymbolBind::LOC, ndx, name);
+		SymbolTable::SymbolTableLine *stline = new SymbolTable::SymbolTableLine(ndx, totalSize, 0, SymbolTable::SymbolType::SCTN, SymbolTable::SymbolBind::LOC, ndx, name);
 		SymbolTable::symbolTable.insert(make_pair(name, stline));
 		SymbolTable::symbolLookupTable.insert(make_pair(ndx, name));
+		totalSize += length;
 	}
 }
 

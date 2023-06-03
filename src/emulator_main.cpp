@@ -15,7 +15,7 @@ int main(int argc, char** argv){
 
 	Memory::loadIntoMemory(in);
 
-	Memory::printMemory(0, 200);
+	Memory::printMemory(0, 310);
 
 	size_t value = Memory::read4Bytes(0);
 

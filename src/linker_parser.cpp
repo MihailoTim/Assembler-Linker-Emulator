@@ -12,7 +12,7 @@ vector<SymbolTable::SymbolTableLine*> Parser::localSymbolTable;
 map<string, string> Parser::localSectionContent;
 vector<RelocationTable::RelocationTableLine*> Parser::localReloTable;
 
-string getByte(uint8_t byte){
+string Parser::getByte(uint8_t byte){
 	string result="";
 	std::stringstream sstream;
 	sstream << setw(2) << setfill('0') << std::hex << int(byte);
@@ -20,7 +20,7 @@ string getByte(uint8_t byte){
 	return result;
 }
 
-string get4Bytes(int bytes){
+string Parser::get4Bytes(int bytes){
     uint8_t byte1 = (bytes >> 24) & 0xFF;
     uint8_t byte2 = (bytes >> 16) & 0xFF;
     uint8_t byte3 = (bytes >> 8) & 0xFF;
@@ -64,15 +64,6 @@ void Parser::parseFile(char *fileIn){
 		SymbolTable::insertNewSymbol(n, stline->value, 0, stline->type, stline->bind, stline->ndx, stline->name, section);
 	}
 	localSymbolTable.clear();
-
-	for(auto reloLine : localReloTable){
-		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[reloLine->symbol];
-		size_t replacement = stline->value + reloLine->addend;
-		string bytes = get4Bytes(replacement);
-		cout<<"REPLACEMENT BYTES: "<<bytes<<endl;
-		localSectionContent[reloLine->section].replace(reloLine->location*2, 8, bytes);
-		cout<<reloLine->location<<" "<<reloLine->symbol<<" "<<reloLine->section<<" "<<stline->value<<endl;
-	}
 
 	for(auto it = localSectionContent.begin(); it!=localSectionContent.end();it++){
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it->first];
