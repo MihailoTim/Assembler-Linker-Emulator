@@ -46,6 +46,6 @@ void Printer::printAllSectionsToHex(){
 		}
 	}
 	if(bufferedAddress > 0){
-		out<<setw(8)<<setfill('0')<<hex<<bufferedAddress<<buffered<<" 00 00 00 00"<<endl;
+		out<<setw(8)<<setfill('0')<<hex<<bufferedAddress<<": "<<buffered<<" 00 00 00 00"<<endl;
 	}
 }

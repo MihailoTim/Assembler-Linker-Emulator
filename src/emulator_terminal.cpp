@@ -29,6 +29,7 @@ void Terminal::getChar(){
 	if(bytes == 1){
 		Memory::write4Bytes(term_in, c);
 		CPU::cause = 3;
+		CPU::interruptQueue.push_back(CAUSE_TERMINAL);
 	}
 }
 

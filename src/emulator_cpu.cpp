@@ -16,6 +16,8 @@ size_t& CPU::status = sreg[0];
 size_t& CPU::handler = sreg[1];
 size_t& CPU::cause = sreg[2];
 
+vector<size_t> CPU::interruptQueue;
+
 int interrupt_count = 0;
 
 void CPU::emulate(size_t startdAddr){
@@ -38,18 +40,21 @@ void CPU::emulate(size_t startdAddr){
 			break;
 		}
 		else if(ret == CAUSE_OPCODE){
+			cause = CAUSE_OPCODE;
+			printRegisterFile();
 			throw new Exception("Opcode not recognized\n");
 		}
 		else{
 			if(isTerminalInterruptEnabled() && isInterruptEnabled()){
 				Terminal::getChar();
 			}
-			if(cause == 3 && isInterruptEnabled() && isTerminalInterruptEnabled()){
+			if(cause == 3 && isInterruptEnabled() && isTerminalInterruptEnabled() && interruptQueue.size()){
 				executePush(status);
 				executePush(pc);
 				status |= 0x7;
 				pc = handler;
 				interrupt_count++;
+				interruptQueue.clear();
 			}
 			ret = 0;
 		}
@@ -198,8 +203,8 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 		case 0x92 : {
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
-		case 0x93 :reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
-		case 0x94 :cout<<"CSRWR: "<<reg2<<endl; sreg1 = reg2; break;
+		case 0x93 : reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x94 : sreg1 = reg2; break;
 		case 0x95 : sreg1 = sreg2 | displ; break;
 		case 0x96 : sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		case 0x97 : sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
@@ -239,7 +244,9 @@ void CPU::printRegisterFile(){
 }
 
 size_t CPU::executePush(size_t value){
+	cout<<"SP BEFORE PUSHING: "<<sp<<endl;
 	sp-=4;
 	Memory::write4Bytes(sp, value);
+	cout<<"SP AFTER PUSHING: "<<sp<<endl;
 	return sp;
 }
