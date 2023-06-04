@@ -18,7 +18,7 @@ wait:
     halt
 
 .section my_data
-.skip 4
+.skip 1
 my_counter:
 .word 0
 

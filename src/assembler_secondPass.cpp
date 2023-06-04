@@ -124,23 +124,9 @@ void SecondPass::handleAsciiDirective(AssemblyLine* line){
 	}
 	for(int i=0;i<(4-line->args[0]->stringVal.size()%4)%4;i++)
 		str += AssemblyInstruction::getByte(0);
+	sectionContent+=str;
 	cout<<"ASCII: "<<str<<endl;
 	locationCounter += str.size();			
-	string res = "";
-	for(int i=0;i<str.size();i++){
-		if(res.size() == 8){
-			for(int j=3;j>=0;j--){
-				sectionContent += res.substr(j*2, 2);
-			}
-			res="";
-		}
-		res+=str[i];
-	}
-	if(res.size()){
-		for(int j=min(3,int(res.size()/2));j>=0;j--){
-			sectionContent += res.substr(j*2, 2);
-		}
-	}
 }
 
 void SecondPass::handleEquDirective(AssemblyLine* line){

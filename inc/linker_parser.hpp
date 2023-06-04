@@ -24,8 +24,6 @@ public:
 
 	static void parseFile(char* fileIn);
 
-	static void getStatus(string line);
-
 	static void handleSectionLine(string line);
 
 	static void handleSectionContent(string line);

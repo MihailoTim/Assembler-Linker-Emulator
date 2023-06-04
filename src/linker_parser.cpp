@@ -95,24 +95,6 @@ void Parser::parseFile(char *fileIn){
 	currentSection = "";
 }
 
-
-void Parser::getStatus(string line){
-	if(line.find("#shdr") != string::npos){
-		status = SECTIONHEADER;
-	}
-	else if(line.find("#.rela.") != string::npos){
-		status = RELOCATIONS;
-		currentSection = line.substr(7);
-	}
-	else if(line.find("#symtab") != string::npos){
-		status = SYMBOLTABLE;
-	}
-	else if(line.find("#") != string::npos){
-		status = SECTIONCONTENT;
-		currentSection = line.substr(1);
-	}
-}
-
 void Parser::handleSectionLine(string line){
 	size_t delim1 = line.find(" ");
 	size_t base = stol(line.substr(0, delim1));

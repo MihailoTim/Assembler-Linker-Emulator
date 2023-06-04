@@ -28,10 +28,18 @@ void CPU::emulate(size_t startdAddr){
 	while(ret == 0){
 		r[0] = 0;
 		vector<uint8_t> line = Memory::readLine(pc);
-		reverse(line.begin(), line.end());
+		// if(pc == 0xd0){
+		// 	cout<<"R1: "<<hex<<r[1]<<endl;
+		// }
+		// if(pc >= 0xd0 && pc<=0xf0){
+		// 	cout<<"R2: "<<hex<<r[2]<<endl;
+		// }
+
 		pc+=4;
+
 		ret = emulateInstruction(line);
 		Terminal::putChar();
+
 
 		if(ret == CAUSE_HALT){
 			break;
@@ -198,6 +206,8 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 		case 0x90 : reg1 = sreg2; break;
 		case 0x91 : reg1 = reg2 + displ; break;
 		case 0x92 : {
+		// if(pc >=0xd0 && pc<=0xf0)
+		// 	cout<<hex<<reg2<<" "<<reg3<<" "<<displ<<" "<<Memory::read4Bytes(reg2 + reg3 + displ)<<endl;
 		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
 		}
 		case 0x93 : reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;

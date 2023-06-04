@@ -1,12 +1,12 @@
 #shdr
 0 0 
 0 72 my_code
-0 8 my_data
+0 5 my_data
 #symtab
 0 0 0 0 0 0 
 1 0 0 0 1 -2 handler
 2 0 0 0 1 4 my_start
-3 4 0 0 1 6 my_counter
+3 1 0 0 1 6 my_counter
 4 0 0 1 0 4 my_code
 5 20 0 0 0 4 wait
 6 0 0 1 0 6 my_data
@@ -20,12 +20,12 @@
 3a f1 20 20 00 00 00 00 
 30 f0 00 1c ff ff fe fe 
 00 00 00 00 00 00 00 01 
-ff ff ff 10 00 00 00 04 
+ff ff ff 10 00 00 00 01 
 00 00 00 14 00 00 00 14
 #.rela.my_code
 48 R_32 1 0
 60 R_32 3 0
 68 R_32 4 20
 #my_data
-00 00 00 00 00 00 00 00
+00 00 00 00 00
 #.rela.my_data
