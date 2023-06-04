@@ -34,8 +34,9 @@ void SectionTable::addNewSectionPlacement(string section, size_t location){
 
 void SectionTable::resolveSectionPlacements(){
 	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
-		cout<<"RESOLVING SECTION PLACEMENT: "<<it->second<<endl;
 		sectionTable[it->first]->base = it->second;
+		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it->first];
+		stline->virtualAddress = sectionTable[it->first]->base;
 	}
 }
 
@@ -43,19 +44,50 @@ void SectionTable::upateSectionVirtualAddresses(){
 	size_t totalSize = 0;
 
 	vector<pair<size_t, string>> sortedSections;
+	vector<pair<size_t, string>> sortedPlacedSections;
 
 	for(auto it=SectionTable::sectionTable.begin(); it!=SectionTable::sectionTable.end(); it++){
 		sortedSections.push_back(make_pair(it->second->base, it->first));
+		if(sectionPlacements.count(it->first)){
+			sortedPlacedSections.push_back(make_pair(it->second->base, it->first));
+		}
 	}
+
 
 	sort(sortedSections.begin(), sortedSections.end());
+	sort(sortedPlacedSections.begin(), sortedPlacedSections.end());
 
-	for(auto it: sortedSections){
-		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it.second];
-		if(sectionPlacements.count(sctnline->name) == 0)
-			sctnline->base = totalSize;
-		totalSize += sctnline->content.size()/2;
-		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it.second];
-		stline->virtualAddress = sctnline->base;
+	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
+		cout<<"SECTION: "<<it->first<<" PLACE AT: "<<it->second<<endl;
 	}
+
+	auto it = sortedPlacedSections.begin();
+	for(auto section : sortedSections){
+
+		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section.second];
+		if(sectionPlacements.count(sctnline->name) == 0 && sctnline->content.size()){
+			cout<<"SECTION NAME: "<<section.second<<endl;
+			cout<<totalSize + sctnline->content.size()/2<<" "<<it->first<<endl;
+			while(it != sortedPlacedSections.end() && totalSize + sctnline->content.size()/2 > it->first){
+				SectionTableLine* placedSection = sectionTable[it->second];
+				cout<<"CANT FIT "<<sctnline->name<<" AT: "<<totalSize<<endl;
+				totalSize = it->first + placedSection->content.size()/2;
+				it++;
+			}
+			cout<<"TOTAL SIZE: "<<totalSize<<endl;
+			sctnline->base = totalSize;
+			totalSize += sctnline->content.size()/2;
+			SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[section.second];
+			stline->virtualAddress = sctnline->base;
+		}
+	}
+
+	// for(auto it: sortedSections){
+	// 	SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it.second];
+	// 	if(sectionPlacements.count(sctnline->name) == 0)
+	// 		sctnline->base = totalSize;
+	// 	totalSize += sctnline->content.size()/2;
+	// 	SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it.second];
+	// 	stline->virtualAddress = sctnline->base;
+	// }
 }

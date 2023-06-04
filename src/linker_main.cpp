@@ -39,13 +39,12 @@ int main(int argc, char** argv) {
 			}
 		}
 
-	SectionTable::printAllSections();
-
 	SectionTable::resolveSectionPlacements();
+
+	SectionTable::printAllSections();
 
 	SectionTable::upateSectionVirtualAddresses();
 
-	SectionTable::printAllSections();
 
 	for(auto it = SymbolTable::symbolTable.begin(); it != SymbolTable::symbolTable.end(); it++){
 		string section = SymbolTable::symbolLookupTable[it->second->ndx];
@@ -85,7 +84,7 @@ int main(int argc, char** argv) {
 			}
 			res+=sctnline->content[i];
 		}
-		cout<<res<<endl;
+		// cout<<res<<endl;
 	}
 
 	Printer::printAllSectionsToHex();
