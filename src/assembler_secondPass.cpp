@@ -375,16 +375,16 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 	SymbolTable::SectionTableLine &sctline = symbolTable->sectionTable[currentSection];
 	if(arg->argType == ArgumentType::SYM){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-		if(sctline.symTabId == symline.ndx){
-			if(canFitInDispl(symline.value, locationCounter + 4)){
-				useDispl = true;
-				if((int)symline.value - ((int)locationCounter + 4) > 0){
-					LiteralPool::handleForwardBranch(locationCounter+2, symline.value - (locationCounter + 4));
-				}
-				symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, locationCounter+4);
-				return symline.value - (locationCounter + 4);
-			}
-		}
+		// if(sctline.symTabId == symline.ndx){
+		// 	if(canFitInDispl(symline.value, locationCounter + 4)){
+		// 		useDispl = true;
+		// 		if((int)symline.value - ((int)locationCounter + 4) > 0){
+		// 			LiteralPool::handleForwardBranch(locationCounter+2, symline.value - (locationCounter + 4));
+		// 		}
+		// 		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, locationCounter+4);
+		// 		return symline.value - (locationCounter + 4);
+		// 	}
+		// }
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::INDIRECT, locationCounter + 4);
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
@@ -423,8 +423,9 @@ int SecondPass::handleLoadArgument(Argument *arg){
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			throw new Exception("Symbol whose value cannot be determined is being used in regind addressing");
+			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			// symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
@@ -450,8 +451,9 @@ int SecondPass::handleStoreArgument(Argument *arg){
 	}
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
-			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			throw new Exception("Symbol whose value cannot be determined is being used in regind addressing");
+			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			// symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))

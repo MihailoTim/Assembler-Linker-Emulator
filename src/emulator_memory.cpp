@@ -10,8 +10,8 @@ void Memory::loadIntoMemory(ifstream& in){
 
 	while(getline(in, line)){
 		// try{
-			size_t address = stoi(line.substr(0,8), nullptr, 16);
-			cout<<address<<endl;
+			cout<<line<<endl;
+			size_t address = stol(line.substr(0,8), nullptr, 16);
 			strippedLine = line.substr(10);
 			size_t pos = strippedLine.find(" ");
 			while (pos != std::string::npos) {
@@ -36,10 +36,10 @@ vector<uint8_t> Memory::getBytesFromLine(string line){
 	vector<uint8_t> bytes;
 	for(int i=0;i<8;i++){
 		uint8_t byte = stoi(line.substr(i*2,2), nullptr, 16);
-		cout<<int(byte)<<" ";
+		// cout<<int(byte)<<" ";
 		bytes.push_back(byte);
 	}
-	cout<<endl;
+	// cout<<endl;
 	return bytes;
 }
 
