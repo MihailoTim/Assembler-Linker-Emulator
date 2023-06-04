@@ -11,64 +11,32 @@ void Printer::printAllSectionsToHex(){
 		string res = "";
 		size_t location = it->second->base;
 		int i=0;
-		for(i = 0; i < (8-it->second->content.size()%8)%8;i++)
-			it->second->content+="00";
-		while(i<it->second->content.size()/8){
-			string line = it->second->content.substr(i*8, 8);
+		while(i<it->second->content.size()/2){
+			string line = it->second->content.substr(i*2, 2);
 			i++;
-			string tmp = "";
-			for(int j=0;j<=3;j++){
-				tmp += line.substr(j*2, 2) + (j==3 ? "" : " ");
-			}
-			outputMap.insert(make_pair(location, tmp));
-			location+=4;
+			outputMap.insert(make_pair(location, line));
+			location++;
 		}
-		// for(int i=0;i<it->second->content.size();i++){
-		// 	res += it->second->content[i];
-		// 	if(i%2 == 0){
-		// 		res+=" ";
-		// 	}
-		// 	if(i%8 == 0){
-		// 		outputMap.insert(make_pair(location, res));
-		// 		location += 4;
-		// 		res = "";
-		// 	}
-		// }
-		// if(res.size()){
-		// 	for(int j=(8-res.size())/2;j>=0;j--){
-		// 		res+= "00";
-		// 		if(j > 0)
-		// 			res+=" ";
-		// 	}
-		// 	outputMap.insert(make_pair(location, res));
-		// 	location += 4;
-		// }
 	}
-	string buffered = "";
-	int bufferedAddress = -1;
+	size_t line = (outputMap.begin()->first / 8) * 8;
+	cout<<"LINE: "<<line<<endl;
+	vector<string> bytes(8,"00");
 	for(auto it = outputMap.begin(); it!=outputMap.end(); it++){
-		if(it->first % 8 == 0){
-			if(outputMap.count(it->first+4)){
-				buffered = it->second;
-				bufferedAddress = it->first;
+		size_t newLine = (it->first/8) * 8;
+		if(line != newLine){
+			out<<setw(8)<<setfill('0')<<hex<<line<<": ";
+			for(int i=0;i<8;i++){
+				out<<bytes[i]<< (i==7 ? "" : " ");
 			}
-			else{
-				out<<setw(8)<<setfill('0')<<hex<<it->first<<": "<<it->second<<" "<<"00 00 00 00"<<endl;	
-				buffered = "";
-				bufferedAddress = -1;
-			}
+			out<<endl;
+			line = newLine;
+			bytes = vector<string>(8,"00");
 		}
-		else if(it->first% 8 == 4){
-			if(buffered.size()){
-				out<<setw(8)<<setfill('0')<<hex<<it->first-4<<": "<<buffered<<" "<<it->second<<endl;
-				bufferedAddress = -1;	
-				buffered = "";
-			}
-			else{
-				out<<setw(8)<<setfill('0')<<hex<<it->first - 4<<": "<<"00 00 00 00"<<" "<<it->second<<endl;
-				bufferedAddress = -1;	
-				buffered = "";
-			}
-		}
+		bytes[it->first % 8] = it->second;
 	}
+	out<<setw(8)<<setfill('0')<<hex<<line<<": ";
+	for(int i=0;i<8;i++){
+		out<<bytes[i]<< (i==7 ? "" : " ");
+	}
+	out<<endl;
 }

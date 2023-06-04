@@ -5,6 +5,8 @@
 
 .section my_code
 my_start:
+    ld $0x40000005, %pc
+    .skip 1
     ld $0xFFFFFEFE, %sp
     ld $handler, %r1
     csrwr %r1, %handler
