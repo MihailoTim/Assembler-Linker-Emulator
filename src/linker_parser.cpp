@@ -11,6 +11,7 @@ string Parser::sectionContent = "";
 vector<SymbolTable::SymbolTableLine*> Parser::localSymbolTable;
 map<string, string> Parser::localSectionContent;
 vector<RelocationTable::RelocationTableLine*> Parser::localReloTable;
+size_t Parser::currentBase = 0;
 
 string Parser::getByte(uint8_t byte){
 	string result="";
@@ -47,6 +48,8 @@ void Parser::parseFile(char *fileIn){
 		else if(line.find("#") != string::npos){
 			status = SECTIONCONTENT;
 			currentSection = line.substr(1);
+			cout<<"READING CONTENT FROM CURRENT SECTION: "<<currentSection<<endl;
+			currentBase = SectionTable::sectionTable[currentSection]->content.size()/2;
 		}
 		else{
 			switch(status){
@@ -61,7 +64,7 @@ void Parser::parseFile(char *fileIn){
 	for(auto stline : localSymbolTable){
 		size_t n = SymbolTable::symbolTable.size();
 		string section = stline->ndx >= 0 ? localSymbolTable[stline->ndx]->name : "";
-		SymbolTable::insertNewSymbol(n, stline->value, 0, stline->type, stline->bind, stline->ndx, stline->name, section);
+		SymbolTable::insertNewSymbol(n, stline->offset, 0, stline->type, stline->bind, stline->ndx, stline->name, section);
 	}
 	localSymbolTable.clear();
 
@@ -70,7 +73,7 @@ void Parser::parseFile(char *fileIn){
 		sctnline->content = it->second;
 
 		string res = "";
-		cout<<"SECTION: "<<it->first<<endl;
+		// cout<<"SECTION: "<<it->first<<endl;
 		for(int i=0;i<sctnline->content.size();i++){
 			if(i%2 == 0 && i!=0){
 				res+=" ";
@@ -83,12 +86,10 @@ void Parser::parseFile(char *fileIn){
 			}
 			res+=sctnline->content[i];
 		}
-		cout<<res<<endl;
+		// cout<<res<<endl;
 	}
 	status = NOTHING;
 	localSymbolTable.clear();
-
-	SectionTable::printAllSections();
 
 	sectionContent = "";
 	currentSection = "";
@@ -164,6 +165,7 @@ void Parser::handleSymbolTableLine(string line){
 }
 
 void Parser::handleRelocationLine(string line){
+	cout<<"CURRENT BASE FOR RELOCATION LINES: "<<currentBase<<endl;
 	size_t delim = line.find(" ");
 	size_t location = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
@@ -174,10 +176,10 @@ void Parser::handleRelocationLine(string line){
 	size_t symbolIndex = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t addend = stol(line.substr(0, delim));
+	int addend = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 
 	string symbol = localSymbolTable[symbolIndex]->name;
 
-	localReloTable.push_back(new RelocationTable::RelocationTableLine(location, type, symbol, addend, currentSection));
+	localReloTable.push_back(new RelocationTable::RelocationTableLine(currentBase + location, type, symbol, addend, currentSection, currentBase));
 }

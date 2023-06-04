@@ -2,6 +2,7 @@
 #include "../inc/emulator_reader.hpp"
 #include "../inc/emulator_memory.hpp"
 #include "../inc/emulator_cpu.hpp"
+#include "../inc/emulator_exceptions.hpp"
 
 using namespace std;
 
@@ -10,19 +11,19 @@ int main(int argc, char** argv){
 	ifstream in(filename);
 
 	if(!in.is_open()){
-		cout<<"Couldn't open file";
+		throw new Exception("Couldn't open file");
 	}
 
 	Memory::loadIntoMemory(in);
 
-	Memory::printMemory(0, 310);
+	CPU::emulate(0x40000000);
 
-	size_t value = Memory::read4Bytes(0);
-
-	CPU::emulate(0);
+	cout<<"\n==============================================================\n";
+	cout<<"Emulated process executed halt instruction\n";
+	cout<<"Emulated process state:\n";
 
 	CPU::printRegisterFile();
 
-	Memory::printMemory(CPU::sp-0x20, CPU::sp+20);
+	// Memory::printMemory(CPU::sp-0x20, CPU::sp+20);
 
 }

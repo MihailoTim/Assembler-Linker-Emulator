@@ -7,11 +7,8 @@ void Printer::printAllSectionsToHex(){
 	map<size_t, string> outputMap;
 	ofstream out("output.hex");
 	for(auto it = SectionTable::sectionTable.begin(); it!= SectionTable::sectionTable.end(); it++){
-		cout<<it->first<<" "<<it->second->content.size()<<endl;
 		string res = "";
 		size_t location = it->second->base;
-		cout<<location<<endl;
-		cout<<it->second->content.size()<<endl;
 		for(int i=0;i<it->second->content.size();i++){
 			res += it->second->content[i];
 			if(res.size() == 8){
@@ -36,16 +33,28 @@ void Printer::printAllSectionsToHex(){
 	string buffered = "";
 	int bufferedAddress = -1;
 	for(auto it = outputMap.begin(); it!=outputMap.end(); it++){
-		if(it->first == bufferedAddress + 4){
-			out<<setw(8)<<setfill('0')<<hex<<bufferedAddress<<": "<<buffered<<" "<<it->second<<endl;
-			bufferedAddress = -1;
+		if(it->first % 8 == 0){
+			if(outputMap.count(it->first+4)){
+				buffered = it->second;
+				bufferedAddress = it->first;
+			}
+			else{
+				out<<setw(8)<<setfill('0')<<hex<<it->first<<": "<<it->second<<" "<<"00 00 00 00"<<endl;	
+				buffered = "";
+				bufferedAddress = -1;
+			}
 		}
-		else{
-			buffered = it->second;
-			bufferedAddress = it->first;
+		else if(it->first% 8 == 4){
+			if(buffered.size()){
+				out<<setw(8)<<setfill('0')<<hex<<it->first-4<<": "<<buffered<<" "<<it->second<<endl;
+				bufferedAddress = -1;	
+				buffered = "";
+			}
+			else{
+				out<<setw(8)<<setfill('0')<<hex<<it->first - 4<<": "<<"00 00 00 00"<<" "<<it->second<<endl;
+				bufferedAddress = -1;	
+				buffered = "";
+			}
 		}
-	}
-	if(bufferedAddress > 0){
-		out<<setw(8)<<setfill('0')<<hex<<bufferedAddress<<": "<<buffered<<" 00 00 00 00"<<endl;
 	}
 }

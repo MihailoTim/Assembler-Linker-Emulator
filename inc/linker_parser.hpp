@@ -20,6 +20,7 @@ public:
 	static vector<SymbolTable::SymbolTableLine*> localSymbolTable;
 	static map<string, string> localSectionContent;
 	static vector<RelocationTable::RelocationTableLine*> localReloTable;
+	static size_t currentBase;
 
 	static void parseFile(char* fileIn);
 

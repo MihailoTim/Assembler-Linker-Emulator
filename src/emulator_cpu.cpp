@@ -26,9 +26,6 @@ void CPU::emulate(size_t startdAddr){
 	size_t ret = 0;
 	Terminal::initialize();
 	while(ret == 0){
-		if(pc == 0x48){
-			// cout<<"NOW IN INTERRUPT ROUTINE"<<endl;
-		}
 		r[0] = 0;
 		vector<uint8_t> line = Memory::readLine(pc);
 		reverse(line.begin(), line.end());
@@ -244,9 +241,7 @@ void CPU::printRegisterFile(){
 }
 
 size_t CPU::executePush(size_t value){
-	cout<<"SP BEFORE PUSHING: "<<sp<<endl;
 	sp-=4;
 	Memory::write4Bytes(sp, value);
-	cout<<"SP AFTER PUSHING: "<<sp<<endl;
 	return sp;
 }

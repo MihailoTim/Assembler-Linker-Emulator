@@ -18,9 +18,15 @@ public:
 
 	static map<string, SectionTableLine*> sectionTable;
 
-	static void addNewSection(string name, size_t length);
+	static map<string, size_t> sectionPlacements;
 
-	static void placeSection(string name, size_t place);
+	static void addNewSectionPlacement(string section, size_t location);
+
+	static void resolveSectionPlacements();
+
+	static void upateSectionVirtualAddresses();
+
+	static void addNewSection(string name, size_t length);
 
 	static void printAllSections();
 };

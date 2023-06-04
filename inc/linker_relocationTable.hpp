@@ -10,9 +10,10 @@ public:
 		size_t location;
 		string type;
 		string symbol;
-		size_t addend;
+		int addend;
 		string section;
-		RelocationTableLine(size_t l, string t, string s, size_t a, string sctn): location(l), type(t), symbol(s), addend(a), section(sctn){}
+		size_t sectionBase;
+		RelocationTableLine(size_t l, string t, string s, int a, string sctn, size_t sb): location(l), type(t), symbol(s), addend(a), section(sctn), sectionBase(sb){}
 	};
 	static void handleReloLine(size_t location, string type, string symbol, size_t addend);
 };

@@ -15,7 +15,8 @@ public:
 
 	struct SymbolTableLine{
 		size_t num;
-		size_t value;
+		size_t offset;
+		size_t virtualAddress;
 		size_t size;
 		SymbolType type;
 		SymbolBind bind;
@@ -23,7 +24,7 @@ public:
 		string name;
 		bool global;
 		SymbolTableLine(){}
-		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), value(v), ndx(ind), bind(sb), type(st), name(sname), size(s), global(false){}
+		SymbolTableLine(size_t n, size_t v, size_t s, SymbolType st,  SymbolBind sb, int ind, string sname) : num(n), offset(v), ndx(ind), bind(sb), type(st), name(sname), size(s), global(false){}
 	};
 
 	static map<string, SymbolTableLine*> symbolTable;
