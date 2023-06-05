@@ -1,0 +1,30 @@
+#shdr
+0 0 
+0 108 terminal_section
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 -2 my_counter
+2 0 0 0 1 -2 end
+3 0 0 0 1 4 isr_terminal
+4 0 0 1 0 4 terminal_section
+#
+#.rela.
+#terminal_section
+81 e0 1f fc 81 e0 2f fc 
+81 e0 3f fc 81 e0 4f fc 
+92 1f 00 3c 92 11 00 00 
+82 f0 10 38 92 3f 00 38 
+92 33 00 00 92 4f 00 34 
+50 33 40 00 82 f0 30 30 
+92 4f 00 30 39 f3 40 30 
+93 4e 00 04 93 3e 00 04 
+93 2e 00 04 93 1e 00 04 
+93 fe 00 04 30 f0 00 1c 
+04 ff ff ff 00 ff ff ff 
+00 00 00 00 01 00 00 00 
+00 00 00 00 14 00 00 00 
+00 00 00 00
+#.rela.terminal_section
+88 R_32 1 0
+96 R_32 1 0
+104 R_32 2 0
