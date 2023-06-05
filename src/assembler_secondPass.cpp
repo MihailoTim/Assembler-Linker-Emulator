@@ -87,11 +87,11 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleWordDirective(AssemblyLine* line){
-	cout<<locationCounter<<": WORD"<<endl;
+	// cout<<locationCounter<<": WORD"<<endl;
 	for(auto arg : line->args){
 		if(arg->argType == ArgumentType::LITERAL){
 			string content = AssemblyInstruction::get4BytesLittleEndian(arg->intVal);
-			cout<<content<<endl;
+			// cout<<content<<endl;
 			writeContentToSection(content);
 		}
 		else{
