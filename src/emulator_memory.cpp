@@ -89,3 +89,18 @@ size_t Memory::read4Bytes(size_t address){
 	size_t byte1 = memory[address];
 	return (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4;
 }
+
+void Memory::write4BytesLittleEndian(size_t address, size_t value){
+	memory[address] = value & 0xFF;
+	memory[address+1] = (value >> 8) & 0xFF;
+	memory[address+2] = (value >> 16) & 0xFF;
+	memory[address+3] = (value >> 24) & 0xFF;
+}
+
+size_t Memory::read4BytesLittleEndian(size_t address){
+	size_t byte4 = memory[address];
+	size_t byte3 = memory[address+1];
+	size_t byte2 = memory[address+2];
+	size_t byte1 = memory[address+3];
+	return (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4;
+}

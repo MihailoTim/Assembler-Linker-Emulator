@@ -20,7 +20,7 @@ void RelocationTable::resolveRelocations(){
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[reloLine->section];
 		size_t replacement = (stline->type == SymbolTable::SymbolType::SCTN ? reloLine->sectionBase : 0) + stline->virtualAddress + reloLine->addend;
 		// cout<<reloLine->sectionBase<<" "<<stline->virtualAddress<<" "<<reloLine->addend<<endl;
-		string bytes = Parser::get4Bytes(replacement);
+		string bytes = Parser::get4BytesLittleEndian(replacement);
 		size_t location = reloLine->location; // OVDE DOHVATI BASE SEKCIJE
 		// cout<<"REPLACEMENT BYTES: "<<bytes<<endl;
 		// cout<<"REPLACEMENT LOCATION: "<<hex<<location<<endl;

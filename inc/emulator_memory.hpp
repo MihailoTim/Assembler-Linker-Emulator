@@ -18,7 +18,11 @@ public:
 
 	static void write4Bytes(size_t address, size_t value);
 
+	static void write4BytesLittleEndian(size_t address, size_t value);
+
 	static size_t read4Bytes(size_t address);
+
+	static size_t read4BytesLittleEndian(size_t address);
 
 	static void printMemory(size_t start, size_t end);
 

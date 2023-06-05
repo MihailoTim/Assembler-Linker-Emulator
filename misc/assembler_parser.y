@@ -96,7 +96,7 @@ program:
             SecondPass &secondPass = SecondPass::getInstance();
             secondPass.setFile(file);
             secondPass.start();
-            //YYACCEPT;
+            YYACCEPT;
         }
     } | 
     line{
@@ -109,7 +109,7 @@ program:
             SecondPass &secondPass = SecondPass::getInstance();
             secondPass.setFile(file);
             secondPass.start();
-            //YYACCEPT;
+            YYACCEPT;
         }
     }
 

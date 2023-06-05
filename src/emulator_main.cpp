@@ -24,7 +24,7 @@ int main(int argc, char** argv){
 
 	CPU::printRegisterFile();
 
-	Memory::printMemory(0, 20);
+	Memory::printMemory(0x70, 0x90);
 
 	// Memory::printMemory(CPU::sp-0x20, CPU::sp+20);
 

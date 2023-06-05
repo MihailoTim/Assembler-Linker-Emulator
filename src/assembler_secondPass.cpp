@@ -90,7 +90,7 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 	cout<<locationCounter<<": WORD"<<endl;
 	for(auto arg : line->args){
 		if(arg->argType == ArgumentType::LITERAL){
-			string content = AssemblyInstruction::get4Bytes(arg->intVal);
+			string content = AssemblyInstruction::get4BytesLittleEndian(arg->intVal);
 			cout<<content<<endl;
 			writeContentToSection(content);
 		}
@@ -458,7 +458,7 @@ void SecondPass::writeReloContentToSection(string content)
 }
 
 void SecondPass::dumpContentToFile(){
-	symbolTable->printAllSectionsHexOnly();
+	// symbolTable->printAllSectionsHexOnly();
 	symbolTable->printSectionTable(objectFile);
 	symbolTable->printSymbolTable(objectFile);
 	symbolTable->printAllSections(objectFile);

@@ -19,6 +19,19 @@ string AssemblyInstruction::get4Bytes(int bytes){
 	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
 }
 
+string AssemblyInstruction::get4BytesLittleEndian(int bytes){
+    uint8_t byte1 = (bytes >> 24) & 0xFF;
+    uint8_t byte2 = (bytes >> 16) & 0xFF;
+    uint8_t byte3 = (bytes >> 8) & 0xFF;
+    uint8_t byte4 = bytes & 0xFF;
+
+	return getByte(byte4) + getByte(byte3) + getByte(byte2) + getByte(byte1);
+}
+
+string AssemblyInstruction::get4BytesLittleEndian(int byte1, int byte2, int byte3, int byte4){
+	return getByte(byte4) + getByte(byte3) + getByte(byte2) + getByte(byte1);
+}
+
 string AssemblyInstruction::get4Bytes(int byte1, int byte2, int byte3, int byte4){
 	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
 }

@@ -12,7 +12,7 @@ handler1:
   jmp finish
 papa_terminal:
   call inc_my_counter
-  ld $0x50000000 , %r1
+  ld $0x50 , %r1
   st %r1, 0xFFFFFF00
   jmp finish
 
@@ -25,7 +25,7 @@ handler2:
   jmp papa_timer
 papa_timer:
   call inc_my_counter
-  ld $0x54000000 , %r1
+  ld $0x54 , %r1
   st %r1, 0xFFFFFF00
   jmp finish
 

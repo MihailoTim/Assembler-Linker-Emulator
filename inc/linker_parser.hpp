@@ -35,6 +35,9 @@ public:
 	static string getByte(uint8_t byte);
 
 	static string get4Bytes(int bytes);
+
+	static string get4BytesLittleEndian(int bytes);
+	static string get4BytesLittleEndian(int byte1, int byte2, int byte3, int byte4);
 };
 
 #endif

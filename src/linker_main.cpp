@@ -8,7 +8,7 @@
 #include "../inc/linker_printer.hpp"
 using namespace std;
 
-char *fileOut;
+char *fileOut = "default.hex";
 
 enum LinkerMode{UNDEFINED, RELOCATABLE, HEX};
 

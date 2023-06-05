@@ -12,7 +12,7 @@ extern int yylex();
 extern int yyparse();
 
 char* fileIn;
-char* fileOut;
+char* fileOut = "default.o";
 
 void checkArguments(int argc, char **argv){
 	if(argc == 1){

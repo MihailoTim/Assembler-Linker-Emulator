@@ -29,7 +29,7 @@ void LiteralPool::dumpPool(string &content, size_t &newLocationCounter){
 		newLocationCounter += 4;
 		for(auto it = literalPool.begin();it!=literalPool.end();it++){
 			if(it->first < rememberedLC){
-				string literalPoolContent = AssemblyInstruction::get4Bytes(it->second->value);
+				string literalPoolContent = AssemblyInstruction::get4BytesLittleEndian(it->second->value);
 				res+=literalPoolContent;
 				size_t oldLocationCounter = it->first;
 				size_t displ = newLocationCounter - oldLocationCounter - 2;

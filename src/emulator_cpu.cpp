@@ -110,7 +110,7 @@ size_t CPU::emulateCall(const vector<uint8_t>& bytes) {
 		return 0;
 	}
 	if(bytes[0] == 0x21){
-		pc = Memory::read4Bytes(reg1 + reg2 + displ);
+		pc = Memory::read4BytesLittleEndian(reg1 + reg2 + displ);
 		// cout<<"CALL TO: "<<hex<<pc<<endl;
 		return 0;
 	}
@@ -129,10 +129,10 @@ size_t CPU::emulateBranch(const vector<uint8_t>& bytes){
 		case 0x31 : if(reg2 == reg3) pc = reg1 + displ; break;
 		case 0x32 : if(reg2 != reg3) pc = reg1 + displ; break;
 		case 0x33 : if(reg2 > reg3) pc = reg1 + displ; break;
-		case 0x38 : pc = Memory::read4Bytes(reg1 + displ);
-		case 0x39 : if(reg2 == reg3) pc = Memory::read4Bytes(reg1 + displ); break;
-		case 0x3a : if(reg2 != reg3) pc = Memory::read4Bytes(reg1 + displ); break;
-		case 0x3b : if(reg2 > reg3) pc = Memory::read4Bytes(reg1 + displ); break;
+		case 0x38 : pc = Memory::read4BytesLittleEndian(reg1 + displ);
+		case 0x39 : if(reg2 == reg3) pc = Memory::read4BytesLittleEndian(reg1 + displ); break;
+		case 0x3a : if(reg2 != reg3) pc = Memory::read4BytesLittleEndian(reg1 + displ); break;
+		case 0x3b : if(reg2 > reg3) pc = Memory::read4BytesLittleEndian(reg1 + displ); break;
 		default: return CAUSE_OPCODE;
 	}
 	return 0;
@@ -204,13 +204,13 @@ size_t CPU::emulateLd(const vector<uint8_t>& bytes) {
 		case 0x92 : {
 		// if(pc >=0xd0 && pc<=0xf0)
 		// 	cout<<hex<<reg2<<" "<<reg3<<" "<<displ<<" "<<Memory::read4Bytes(reg2 + reg3 + displ)<<endl;
-		 reg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
+		 reg1 = Memory::read4BytesLittleEndian(reg2 + reg3 + displ); break;
 		}
-		case 0x93 : reg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x93 : reg1 = Memory::read4BytesLittleEndian(reg2); reg2 += displ; break;
 		case 0x94 : sreg1 = reg2; break;
 		case 0x95 : sreg1 = sreg2 | displ; break;
-		case 0x96 : sreg1 = Memory::read4Bytes(reg2 + reg3 + displ); break;
-		case 0x97 : sreg1 = Memory::read4Bytes(reg2); reg2 += displ; break;
+		case 0x96 : sreg1 = Memory::read4BytesLittleEndian(reg2 + reg3 + displ); break;
+		case 0x97 : sreg1 = Memory::read4BytesLittleEndian(reg2); reg2 += displ; break;
 		default: return CAUSE_OPCODE;
 	}
     return 0;
@@ -223,9 +223,9 @@ size_t CPU::emulateSt(const vector<uint8_t>& bytes) {
 	int unsignedDispl = (((bytes[2]) & 0xF )  << 8) + (int(bytes[3]));
 	int displ = (unsignedDispl & 0x800) ? (unsignedDispl | 0xFFFFF800) : unsignedDispl;
     switch(bytes[0]){
-		case 0x80 : Memory::write4Bytes(reg1+reg2+displ, reg3); break;
-		case 0x81 : reg1 += displ; Memory::write4Bytes(reg1, reg3); break;
-		case 0x82 : Memory::write4Bytes(Memory::read4Bytes(reg1+reg2+displ), reg3); break;
+		case 0x80 : Memory::write4BytesLittleEndian(reg1+reg2+displ, reg3); break;
+		case 0x81 : reg1 += displ; Memory::write4BytesLittleEndian(reg1, reg3); break;
+		case 0x82 : Memory::write4BytesLittleEndian(Memory::read4BytesLittleEndian(reg1+reg2+displ), reg3); break;
 		default: return CAUSE_OPCODE;
 	}
     return 0; 
@@ -248,6 +248,6 @@ void CPU::printRegisterFile(){
 
 size_t CPU::executePush(size_t value){
 	sp-=4;
-	Memory::write4Bytes(sp, value);
+	Memory::write4BytesLittleEndian(sp, value);
 	return sp;
 }

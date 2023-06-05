@@ -27,7 +27,7 @@ void Terminal::getChar(){
 	char c;
 	size_t bytes = read(fileno(stdin), &c, 1);
 	if(bytes == 1){
-		Memory::write4Bytes(term_in, c);
+		Memory::write4BytesLittleEndian(term_in, c);
 		CPU::cause = 3;
 		CPU::interruptQueue.push_back(CAUSE_TERMINAL);
 	}
@@ -42,6 +42,6 @@ void Terminal::putChar(){
 	if(out){
 		cout<<char((out >> 24) & 0xFF);
 		cout<<flush;
-		Memory::write4Bytes(term_out, 0);
+		Memory::write4BytesLittleEndian(term_out, 0);
 	}
 }

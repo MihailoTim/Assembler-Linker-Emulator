@@ -1,6 +1,7 @@
 #include "../inc/linker_parser.hpp"
 #include "../inc/linker_sectionTable.hpp"
 #include "../inc/linker_relocationTable.hpp"
+#include "../inc/linker_exceptions.hpp"
 #include <iomanip>
 
 using namespace std;
@@ -30,9 +31,27 @@ string Parser::get4Bytes(int bytes){
 	return getByte(byte1) + getByte(byte2) + getByte(byte3) + getByte(byte4);
 }
 
+string Parser::get4BytesLittleEndian(int bytes){
+    uint8_t byte1 = (bytes >> 24) & 0xFF;
+    uint8_t byte2 = (bytes >> 16) & 0xFF;
+    uint8_t byte3 = (bytes >> 8) & 0xFF;
+    uint8_t byte4 = bytes & 0xFF;
+
+	return getByte(byte4) + getByte(byte3) + getByte(byte2) + getByte(byte1);
+}
+
+string Parser::get4BytesLittleEndian(int byte1, int byte2, int byte3, int byte4){
+	return getByte(byte4) + getByte(byte3) + getByte(byte2) + getByte(byte1);
+}
+
 void Parser::parseFile(char *fileIn){
 	string line;
 	ifstream in(fileIn);
+	string filename = fileIn;
+
+	if(!in.is_open()){
+		throw new Exception("Couldn't open file "+filename);
+	}
 
 	while(getline(in, line)){
 		if(line.find("#shdr") != string::npos){
@@ -67,7 +86,7 @@ void Parser::parseFile(char *fileIn){
 	}
 	localSymbolTable.clear();
 
-	SymbolTable::printSymbolTable();
+	// SymbolTable::printSymbolTable();
 
 	for(auto it = localSectionContent.begin(); it!=localSectionContent.end();it++){
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it->first];
