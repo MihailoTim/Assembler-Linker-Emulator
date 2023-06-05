@@ -14,7 +14,7 @@ get_back:
   ld $0, %r4
 for:
   ld [%r2], %r3
-  ld $0xFF000000, %r1
+  ld $0xFF, %r1
   and %r1, %r3
   st %r3, %r9
   st %r3, 0xFFFFFF00
@@ -28,7 +28,7 @@ for:
 
 handler:
   push %r1
-  ld $0x50000000, %r1
+  ld $0x50, %r1
   st %r1, 0xFFFFFF00
   pop %r1
   iret
