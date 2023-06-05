@@ -1,6 +1,8 @@
 #include "../inc/linker_sectionTable.hpp"
 #include "../inc/linker_symbolTable.hpp"
+#include "../inc/linker_relocationTable.hpp"
 #include <algorithm>
+#include <fstream>
 
 map<string, SectionTable::SectionTableLine*> SectionTable::sectionTable;
 map<string, size_t> SectionTable::sectionPlacements;
@@ -23,18 +25,19 @@ void SectionTable::addNewSection(string name, size_t length){
 
 void SectionTable::printAllSections(){
 	for(auto it=sectionTable.begin(); it!=sectionTable.end(); it++){
-		cout<<"#"<<it->first<<" "<<it->second->base<<" "<<it->second->content.size()/2<<endl;
+		cout<<"#"<<it->first<<" "<<hex<<it->second->base<<" "<<it->second->content.size()/2<<endl;
 	}
 }
 
 void SectionTable::addNewSectionPlacement(string section, size_t location){
-	cout<<"NEW SECTION PLACEMENT: "<<location<<endl;
 	sectionPlacements.insert(make_pair(section, location));
 }
 
 void SectionTable::resolveSectionPlacements(){
+	SectionTable::printAllSections();
 	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
 		sectionTable[it->first]->base = it->second;
+		cout<<it->first<<" "<<it->second<<" "<<endl;
 		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it->first];
 		stline->virtualAddress = sectionTable[it->first]->base;
 	}
@@ -57,24 +60,16 @@ void SectionTable::upateSectionVirtualAddresses(){
 	sort(sortedSections.begin(), sortedSections.end());
 	sort(sortedPlacedSections.begin(), sortedPlacedSections.end());
 
-	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
-		cout<<"SECTION: "<<it->first<<" PLACE AT: "<<it->second<<endl;
-	}
-
 	auto it = sortedPlacedSections.begin();
 	for(auto section : sortedSections){
 
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section.second];
 		if(sectionPlacements.count(sctnline->name) == 0 && sctnline->content.size()){
-			cout<<"SECTION NAME: "<<section.second<<endl;
-			cout<<totalSize + sctnline->content.size()/2<<" "<<it->first<<endl;
 			while(it != sortedPlacedSections.end() && totalSize + sctnline->content.size()/2 > it->first){
 				SectionTableLine* placedSection = sectionTable[it->second];
-				cout<<"CANT FIT "<<sctnline->name<<" AT: "<<totalSize<<endl;
 				totalSize = it->first + placedSection->content.size()/2;
 				it++;
 			}
-			cout<<"TOTAL SIZE: "<<totalSize<<endl;
 			sctnline->base = totalSize;
 			totalSize += sctnline->content.size()/2;
 			SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[section.second];
@@ -90,4 +85,35 @@ void SectionTable::upateSectionVirtualAddresses(){
 	// 	SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it.second];
 	// 	stline->virtualAddress = sctnline->base;
 	// }
+}
+
+void SectionTable::printSectionHeadersToOutput(ofstream &out){
+	out<<"#shdr\n";
+	for(auto it = SectionTable::sectionTable.begin(); it!=SectionTable::sectionTable.end(); it++){
+		out<<it->second->base<<" "<<it->second->content.size()/2<<" "<<it->first<<endl;
+	}
+}
+
+void SectionTable::printSectionContentToOutput(ofstream &out){
+	for(auto it = SectionTable::sectionTable.begin(); it!=SectionTable::sectionTable.end(); it++){
+		SectionTableLine *sctnline = it->second;
+		string res = "";
+		res += "#" + sctnline->name + "\n";
+		out<<res;
+		res="";
+		for(int i=0;i<sctnline->content.size();i++){
+			if(i%2 == 0 && i!=0){
+				res+=" ";
+			}
+			if(i%16 == 0 && i!=0){
+				res+="\n";
+			}
+			res+=sctnline->content[i];
+		}
+		if(res.size())
+			out<<res<<endl;
+	
+		RelocationTable::printRelocationsToOutput(out, it->second->name);
+		
+	}	
 }

@@ -1,12 +1,12 @@
 #include "../inc/linker_symbolTable.hpp"
 #include "../inc/linker_sectionTable.hpp"
 #include "../inc/linker_exceptions.hpp"
+#include <fstream>
 
 map<string, SymbolTable::SymbolTableLine*> SymbolTable::symbolTable;
-map<size_t, string> SymbolTable::symbolLookupTable;
+map<int, string> SymbolTable::symbolLookupTable;
 
 void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section){
-	// cout<<name<<" "<<value<<endl;
 	SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section];
 	if(bind == SymbolBind::LOC)
 		return;
@@ -41,14 +41,42 @@ void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolT
 }
 
 void SymbolTable::printSymbolTable(){
-	cout<<"#symbtab"<<endl;
+	cout<<"#symtab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
 		SymbolTableLine *stline = symbolTable[it->second];
-		cout<<stline->num<<" "<<stline->offset<<" "<<stline->virtualAddress<<" "<<stline->size<<" "<<stline->type<<" "<<stline->bind<<" "<<stline->ndx<<" "<<stline->name<<" ";
-		cout<<endl;
+		cout<<stline->num<<" "<<stline->offset<<" "<<stline->virtualAddress<<" "<<stline->size<<" "<<stline->type<<" "<<stline->bind<<" "<<stline->ndx<<" "<<stline->name<<endl;
 	}
 	cout<<"#lookuptab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
-		cout<<it->first<<" " <<it->second<<endl;
+		cout<<dec<<it->first<<" " <<it->second<<endl;
+	}
+}
+
+void SymbolTable::updateSymbolVirtualAddresses(){
+	for(auto it = SymbolTable::symbolTable.begin(); it != SymbolTable::symbolTable.end(); it++){
+		if(it->second->ndx <0)
+			continue;
+		string section = SymbolTable::symbolLookupTable[it->second->ndx];
+		SectionTable::SectionTableLine *sctn = SectionTable::sectionTable[section];
+		if(it->second->type != SymbolTable::SymbolType::SCTN)
+			it->second->virtualAddress = sctn->base + it->second->offset;
+		else
+			it->second->offset = 0;
+	}
+}
+
+bool SymbolTable::checkHexCompatible(){
+	for(auto it = SymbolTable::symbolTable.begin(); it!= SymbolTable::symbolTable.end(); it++){
+		if(it->second->ndx < 0)
+			return false;
+	}
+	return true;
+}
+
+void SymbolTable::printSymbolTableToOutput(ofstream &out){
+	out<<"#symtab"<<endl;
+	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
+		SymbolTableLine *stline = symbolTable[it->second];
+		out<<stline->num<<" "<<stline->offset<<" "<<stline->size<<" "<<stline->type<<" "<<stline->bind<<" "<<stline->ndx<<" "<<stline->name<<endl;
 	}
 }

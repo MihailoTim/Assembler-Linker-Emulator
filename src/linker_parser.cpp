@@ -48,7 +48,6 @@ void Parser::parseFile(char *fileIn){
 		else if(line.find("#") != string::npos){
 			status = SECTIONCONTENT;
 			currentSection = line.substr(1);
-			cout<<"READING CONTENT FROM CURRENT SECTION: "<<currentSection<<endl;
 			currentBase = SectionTable::sectionTable[currentSection]->content.size()/2;
 		}
 		else{
@@ -147,7 +146,6 @@ void Parser::handleSymbolTableLine(string line){
 }
 
 void Parser::handleRelocationLine(string line){
-	cout<<"CURRENT BASE FOR RELOCATION LINES: "<<currentBase<<endl;
 	size_t delim = line.find(" ");
 	size_t location = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
@@ -160,7 +158,6 @@ void Parser::handleRelocationLine(string line){
 	delim = line.find(" ");
 	int addend = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
-
 	string symbol = localSymbolTable[symbolIndex]->name;
 
 	localReloTable.push_back(new RelocationTable::RelocationTableLine(currentBase + location, type, symbol, addend, currentSection, currentBase));

@@ -3,10 +3,9 @@
 #include <fstream>
 #include <algorithm>
 
-void Printer::printAllSectionsToHex(){
+void Printer::printAllSectionsToHex(char* fileOut){
 	map<size_t, string> outputMap;
-	ofstream out("output.hex");
-	cout<<"STARTED PRINTING\n";
+	ofstream out(fileOut);
 	for(auto it = SectionTable::sectionTable.begin(); it!= SectionTable::sectionTable.end(); it++){
 		string res = "";
 		size_t location = it->second->base;
@@ -19,7 +18,6 @@ void Printer::printAllSectionsToHex(){
 		}
 	}
 	size_t line = (outputMap.begin()->first / 8) * 8;
-	cout<<"LINE: "<<line<<endl;
 	vector<string> bytes(8,"00");
 	for(auto it = outputMap.begin(); it!=outputMap.end(); it++){
 		size_t newLine = (it->first/8) * 8;

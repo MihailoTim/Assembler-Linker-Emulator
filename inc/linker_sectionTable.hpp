@@ -29,4 +29,8 @@ public:
 	static void addNewSection(string name, size_t length);
 
 	static void printAllSections();
+
+	static void printSectionHeadersToOutput(ofstream &out);
+
+	static void printSectionContentToOutput(ofstream &out);
 };

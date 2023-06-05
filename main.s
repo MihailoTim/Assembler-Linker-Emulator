@@ -18,7 +18,15 @@ wait:
     ld $20, %r2
     bne %r1, %r2, wait
     halt
-
+a:
+b:
+c:
+d:
+e:
+f:
+g:
+h:
+i:
 .section my_data
 .skip 1
 my_counter:

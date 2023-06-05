@@ -1,0 +1,32 @@
+#shdr
+0 0 
+0 81 my_code
+81 5 my_data
+#symtab
+0 0 0 1 0 0 
+1 0 0 1 0 1 my_code
+2 0 0 1 0 2 my_data
+3 0 0 0 1 -2 handler
+4 0 0 0 1 1 my_start
+5 1 0 0 1 2 my_counter
+#
+#.rela.
+#my_code
+92 ff 00 2d 00 92 ef 00 
+2c 92 1f 00 2c 94 11 00 
+00 92 1f 00 28 82 f0 10 
+28 92 1f 00 28 92 11 00 
+00 92 2f 00 24 3a f1 20 
+24 00 00 00 00 30 f0 00 
+20 40 00 00 05 ff ff fe 
+fe 00 00 00 00 00 00 00 
+01 ff ff ff 10 00 00 00 
+52 00 00 00 14 00 00 00 
+19
+#.rela.my_code
+57 R_32 3 0
+69 R_32 5 0
+77 R_32 1 25
+#my_data
+00 00 00 00 00
+#.rela.my_data

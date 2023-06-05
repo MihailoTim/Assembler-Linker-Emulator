@@ -28,11 +28,17 @@ public:
 	};
 
 	static map<string, SymbolTableLine*> symbolTable;
-	static map<size_t, string> symbolLookupTable;
+	static map<int, string> symbolLookupTable;
 
 	static void insertNewSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section);
 
+	static void updateSymbolVirtualAddresses();
+
+	static bool checkHexCompatible();
+
 	static void printSymbolTable();
+
+	static void printSymbolTableToOutput(ofstream &out);
 };
 
 #endif

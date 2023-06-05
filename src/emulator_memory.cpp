@@ -10,7 +10,7 @@ void Memory::loadIntoMemory(ifstream& in){
 
 	while(getline(in, line)){
 		// try{
-			cout<<line<<endl;
+			// cout<<line<<endl;
 			size_t address = stol(line.substr(0,8), nullptr, 16);
 			strippedLine = line.substr(10);
 			size_t pos = strippedLine.find(" ");
