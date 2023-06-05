@@ -87,16 +87,17 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleWordDirective(AssemblyLine* line){
-	// cout<<locationCounter<<": WORD"<<endl;
+	cout<<locationCounter<<": WORD"<<endl;
 	for(auto arg : line->args){
 		if(arg->argType == ArgumentType::LITERAL){
 			string content = AssemblyInstruction::get4Bytes(arg->intVal);
+			cout<<content<<endl;
 			writeContentToSection(content);
 		}
 		else{
 			if(arg->argType == ArgumentType::SYM){
 				reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
-				string content = "00 00 00 00";
+				string content = "00000000";
 				writeContentToSection(content);
 			}
 		}

@@ -26,18 +26,14 @@ void CPU::emulate(size_t startdAddr){
 	size_t ret = 0;
 	Terminal::initialize();
 	while(ret == 0){
+		// cout<<"PC: "<<hex<<pc<<endl;
 		r[0] = 0;
 		vector<uint8_t> line = Memory::readLine(pc);
-		// if(pc == 0xd0){
-		// 	cout<<"R1: "<<hex<<r[1]<<endl;
-		// }
-		// if(pc >= 0xd0 && pc<=0xf0){
-		// 	cout<<"R2: "<<hex<<r[2]<<endl;
-		// }
 
 		pc+=4;
 
 		ret = emulateInstruction(line);
+
 		Terminal::putChar();
 
 

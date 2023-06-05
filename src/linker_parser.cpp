@@ -67,6 +67,8 @@ void Parser::parseFile(char *fileIn){
 	}
 	localSymbolTable.clear();
 
+	SymbolTable::printSymbolTable();
+
 	for(auto it = localSectionContent.begin(); it!=localSectionContent.end();it++){
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[it->first];
 		sctnline->content = it->second;
@@ -142,6 +144,10 @@ void Parser::handleSymbolTableLine(string line){
 
 	SymbolTable::SymbolTableLine *stline = new SymbolTable::SymbolTableLine(num, value, 0, type, bind, ndx, name);
 
+	for(auto line : localSymbolTable){
+		if(line->name == stline->name)
+			return;
+	}
 	localSymbolTable.push_back(stline);
 }
 
