@@ -44,24 +44,20 @@ int main(int argc, char** argv) {
 		}
 		else{
 			char* fileIn = argv[i];
-			cout<<fileIn<<endl;
 			Parser::parseFile(fileIn);
 			i++;
 		}
 	}
 
-	SectionTable::resolveSectionPlacements();
-
-	// SectionTable::printAllSections();
-
-	SectionTable::upateSectionVirtualAddresses();
-
-	SymbolTable::updateSymbolVirtualAddresses();
-
-	RelocationTable::resolveRelocations();
-
 
 	if(mode == LinkerMode::HEX){
+		SectionTable::resolveSectionPlacements();
+
+		SectionTable::upateSectionVirtualAddresses();
+
+		SymbolTable::updateSymbolVirtualAddresses();
+
+		RelocationTable::resolveRelocations();
 		bool check = SymbolTable::checkHexCompatible();
 		if(!check){
 			throw new Exception("Can't make hex as there are unresolved symbols");
@@ -69,11 +65,18 @@ int main(int argc, char** argv) {
 		Printer::printAllSectionsToHex(fileOut);
 	}
 	else if(mode == LinkerMode::RELOCATABLE){
+
+		SectionTable::upateSectionVirtualAddresses();
+
+		SymbolTable::updateSymbolVirtualAddresses();
+
+		RelocationTable::resolveRelocations();
+
 		ofstream out(fileOut);
 		SectionTable::printSectionHeadersToOutput(out);
 		SymbolTable::printSymbolTableToOutput(out);
 		SectionTable::printSectionContentToOutput(out);
-		SymbolTable::printSymbolTable();
+		// SymbolTable::printSymbolTable();
 	}
 	return 0;
 }

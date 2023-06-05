@@ -6,7 +6,7 @@
 vector<RelocationTable::RelocationTableLine*> RelocationTable::outputReloTable;
 
 void RelocationTable::handleReloLine(size_t location, string type, string symbol, size_t addend){
-	cout<<location<<" "<<type<<" "<<symbol<<" "<<addend<<endl;
+	// cout<<location<<" "<<type<<" "<<symbol<<" "<<addend<<endl;
 }
 
 void RelocationTable::addReloLineToOutput(size_t location, string type, string symbol, size_t addend, string section, size_t base){

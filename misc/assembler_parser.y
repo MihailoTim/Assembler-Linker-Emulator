@@ -91,7 +91,7 @@ program:
         file->writeLine(currentLine);
         currentLine = new AssemblyLine(lineCount);
         if(isEnd){
-            file->printFile();
+            //file->printFile();
             firstPass.setStatus(FirstPass::PassStatus::FINISHED);
             SecondPass &secondPass = SecondPass::getInstance();
             secondPass.setFile(file);
@@ -104,7 +104,7 @@ program:
         file->writeLine(currentLine);
         currentLine = new AssemblyLine(lineCount);
         if(isEnd){
-            file->printFile();
+            //file->printFile();
             firstPass.setStatus(FirstPass::PassStatus::FINISHED);
             SecondPass &secondPass = SecondPass::getInstance();
             secondPass.setFile(file);

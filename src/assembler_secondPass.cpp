@@ -13,7 +13,7 @@ string SecondPass::sectionContent = "";
 vector<string> SecondPass::reloTableContent;
 
 void SecondPass::performBetweenPassCheck(){
-	symbolTable->printSymbolTable();
+	// symbolTable->printSymbolTable();
 	map<string, SymbolTable::SymbolTableLine> symTab = symbolTable->symbolTable;
 	for(auto stline : symTab){
 		if(stline.second.ndx == SymbolTable::SymbolSection::GLOBAL || stline.second.bind == SymbolTable::SymbolBind::UNBOUND){
@@ -27,9 +27,9 @@ void SecondPass::start(){
 	setSymbolTable(&SymbolTable::getInstance());
 	performBetweenPassCheck();
 	performLineByLine();
-	symbolTable->printAllSections();
-	symbolTable->printSymbolTable();
-	symbolTable->printSectionTable();
+	// symbolTable->printAllSections();
+	// symbolTable->printSymbolTable();
+	// symbolTable->printSectionTable();
 	dumpContentToFile();
 }
 
@@ -37,7 +37,6 @@ void SecondPass::performLineByLine(){
 	for(auto line : file->readFile()){
 		locationCounter = sectionContent.size() / 2;
 		if(line->label.size()){
-			cout<<locationCounter<<" "<<line->label<<endl;
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[line->label];
 			symline.value = locationCounter;
 		}
@@ -73,10 +72,9 @@ void SecondPass::handleExternDirective(AssemblyLine* line){
 void SecondPass::handleSectionDirective(AssemblyLine* line){
 	SymbolTable::SectionTableLine &sctnline = symbolTable->sectionTable[currentSection];
 	sctnline.content = sectionContent;
-	LiteralPool::printLiteralPool();
+	// LiteralPool::printLiteralPool();
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	sctnline.length = locationCounter - sctnline.base;
-	cout<<currentSection<<endl;
 	fixSymbolReferences();
 	fixReloTable();
 	LiteralPool::changeSection();
@@ -89,7 +87,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleWordDirective(AssemblyLine* line){
-	cout<<locationCounter<<": WORD"<<endl;
+	// cout<<locationCounter<<": WORD"<<endl;
 	for(auto arg : line->args){
 		if(arg->argType == ArgumentType::LITERAL){
 			string content = AssemblyInstruction::get4Bytes(arg->intVal);
@@ -107,12 +105,11 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleSkipDirective(AssemblyLine* line){
-	cout<<locationCounter<<": SKIP"<<endl;
+	// cout<<locationCounter<<": SKIP"<<endl;
 	string content = "";
 	for(int i=0;i<line->args[0]->intVal;i++){
 		content += "00";
 	}
-	cout<<content<<endl;
 	writeContentToSection(content);
 	locationCounter += line->args[0]->intVal;
 }
@@ -125,12 +122,11 @@ void SecondPass::handleAsciiDirective(AssemblyLine* line){
 	for(int i=0;i<(4-line->args[0]->stringVal.size()%4)%4;i++)
 		str += AssemblyInstruction::getByte(0);
 	sectionContent+=str;
-	cout<<"ASCII: "<<str<<endl;
 	locationCounter += str.size();			
 }
 
 void SecondPass::handleEquDirective(AssemblyLine* line){
-	cout<<"EQU\n"<<endl;
+	// cout<<"EQU\n"<<endl;
 }
 
 void SecondPass::handleEndDirective(AssemblyLine* line){
@@ -144,7 +140,7 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 }
 
 void SecondPass::handleHaltInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": HALT"<<endl;
+	// cout<<locationCounter<<": HALT"<<endl;
 	string content = AssemblyInstruction::getHaltBytes(line);
 	writeContentToSection(content);
     //locationCounter += 4;
@@ -163,196 +159,196 @@ void SecondPass::handleIretInstruction(AssemblyLine* line) {
 }
 
 void SecondPass::handleCallInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": CALL"<<endl;
+	// cout<<locationCounter<<": CALL"<<endl;
 	int displ = handleCallArgument(line->args[0]);
 	string content = AssemblyInstruction::getCallBytes(line, displ);
-	cout<<content<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handleRetInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getRetBytes(line);
-	cout<<locationCounter<<": RET"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": RET"<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handleJmpInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": JMP"<<endl;
+	// cout<<locationCounter<<": JMP"<<endl;
 	bool useDispl = false;
 	int displ = handleBranchArgument(line->args[0], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
-	cout<<content<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBeqInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": BEQ"<<endl;
+	// cout<<locationCounter<<": BEQ"<<endl;
 	bool useDispl = false;
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
-	cout<<content<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBneInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": BNE"<<endl;
+	// cout<<locationCounter<<": BNE"<<endl;
 	bool useDispl = false;
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
-	cout<<content<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleBgtInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": BGT"<<endl;
+	// cout<<locationCounter<<": BGT"<<endl;
 	bool useDispl = false;
 	int displ = handleBranchArgument(line->args[2], useDispl);
 	string content = AssemblyInstruction::getBranchBytes(line, displ, useDispl);
-	cout<<content<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handlePushInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getPushBytes(line);
-	cout<<locationCounter<<": PUSH"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": PUSH"<<endl;
+	// cout<<content<<endl;
     writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handlePopInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getPopBytes(line);
-	cout<<locationCounter<<": POP"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": POP"<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handleXchgInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getXchgBytes(line);
-	cout<<locationCounter<<": XCHG"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": XCHG"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleAddInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-	cout<<locationCounter<<": ADD"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": ADD"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleSubInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-	cout<<locationCounter<<": SUB"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": SUB"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleMulInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-	cout<<locationCounter<<": MUL"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": MUL"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleDivInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getArithmBytes(line);
-	cout<<locationCounter<<": DIV"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": DIV"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleNotInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-	cout<<locationCounter<<": NOT"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": NOT"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleAndInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-	cout<<locationCounter<<": AND"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": AND"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleOrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-	cout<<locationCounter<<": OR"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": OR"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleXorInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLogicBytes(line);
-	cout<<locationCounter<<": XOR"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": XOR"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleShlInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getShiftBytes(line);
-	cout<<locationCounter<<": SHL"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": SHL"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleShrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getShiftBytes(line);
-	cout<<locationCounter<<": SHR"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": SHR"<<endl;
+	// cout<<content<<endl;
     //locationCounter += 4;
 	writeContentToSection(content);
 }
 
 void SecondPass::handleLdInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": LD"<<endl;
+	// cout<<locationCounter<<": LD"<<endl;
 	int displ = handleLoadArgument(line->args[0]);
 	string content = AssemblyInstruction::getLoadBytes(line, displ);
-	cout<<content<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     locationCounter += content.size()/2;
 }
 
 void SecondPass::handleStInstruction(AssemblyLine* line) {
-	cout<<locationCounter<<": ST"<<endl;
+	// cout<<locationCounter<<": ST"<<endl;
 	int displ = handleStoreArgument(line->args[1]);
 	string content = AssemblyInstruction::getStoreBytes(line, displ);
-	cout<<content<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handleCsrrdInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLoadBytes(line);
-	cout<<locationCounter<<": CSRRD"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": CSRRD"<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
 
 void SecondPass::handleCsrwrInstruction(AssemblyLine* line) {
 	string content = AssemblyInstruction::getLoadBytes(line);
-	cout<<locationCounter<<": CSRWR"<<endl;
-	cout<<content<<endl;
+	// cout<<locationCounter<<": CSRWR"<<endl;
+	// cout<<content<<endl;
 	writeContentToSection(content);
     //locationCounter += 4;
 }
@@ -473,10 +469,6 @@ void SecondPass::fixSymbolReferences(){
 		SymbolTable::SymbolTableLine &stline = symbolTable->symbolTable[it->first];
 		for(auto ref : stline.references){
 			int displ  = stline.value - ref->refPoint;
-			cout<<"DISPLACEMENT: "<<displ<<endl;
-			cout<<stline.name<<stline.value<<ref->refPoint<<endl;
-			cout<<sctnline.content.size()<<endl;
-			cout<<currentSection<<endl;
 			if(ref->refType == SymbolTable::ReferenceLocation::DIRECT){
 				string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
 				string byte4 = AssemblyInstruction::getByte(displ & 0xFF);

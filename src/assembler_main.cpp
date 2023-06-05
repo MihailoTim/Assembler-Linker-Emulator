@@ -49,7 +49,6 @@ int main(int argc, char** argv) {
 	secondPass.setOutputFile(fileOut);
 
 	FILE* file = fopen(fileIn, "r");
-	cout<<fileIn<<endl;
 	if(file) {
 		yyin = file;
 		yyparse();
@@ -59,7 +58,7 @@ int main(int argc, char** argv) {
 		}
 	}
 	else{
-		cout<<"Can't open file"<<endl;
+		throw new Exception("Can't open file");
 	}
 	return 0;
 }

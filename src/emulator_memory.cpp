@@ -47,12 +47,10 @@ vector<uint8_t> Memory::getInstructionFromLine(string line){
 	vector<uint8_t> bytes;
 	for(int i=3;i>=0;i--){
 		uint8_t byte = stoi(line.substr(i*2,2), nullptr, 16);
-		cout<<int(byte)<<" ";
 		bytes.push_back(byte);
 	}
 	for(int i=7;i>=4;i--){
 		uint8_t byte = stoi(line.substr(i*2,2), nullptr, 16);
-		cout<<int(byte)<<" ";
 		bytes.push_back(byte);
 	}
 	cout<<endl;

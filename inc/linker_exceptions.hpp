@@ -11,6 +11,7 @@ class Exception : public exception{
 public:
     Exception(const string& msg) : m_msg(msg){
 		cout<<endl<<"Error: "<<m_msg<<endl;
+      exit(-1);
 	}
 
    virtual const char* what() const throw () 

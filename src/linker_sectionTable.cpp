@@ -34,10 +34,8 @@ void SectionTable::addNewSectionPlacement(string section, size_t location){
 }
 
 void SectionTable::resolveSectionPlacements(){
-	SectionTable::printAllSections();
 	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
 		sectionTable[it->first]->base = it->second;
-		cout<<it->first<<" "<<it->second<<" "<<endl;
 		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it->first];
 		stline->virtualAddress = sectionTable[it->first]->base;
 	}
