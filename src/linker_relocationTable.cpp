@@ -26,6 +26,9 @@ void RelocationTable::resolveRelocations(){
 		// cout<<"REPLACEMENT LOCATION: "<<hex<<location<<endl;
 		// cout<<"REFERENCE POINT: "<<referencePoint->name<<" "<<referencePoint->offset<<endl;
 		// cout<<reloLine->location<<" "<<reloLine->symbol<<" "<<referencePoint->name<<" "<<stline->offset<<" "<<stline->name<<" "<<endl;
+		if(stline->type == SymbolTable::SymbolType::SCTN){
+			cout<<stline->num<<" "<<stline->name<<" "<<stline->offset<<" "<<reloLine->sectionBase<<" "<<reloLine->section<<endl;
+		}
 		RelocationTable::RelocationTableLine* outputReloLine = new RelocationTable::RelocationTableLine(location, reloLine->type, reloLine->symbol, reloLine->addend + (stline->type == SymbolTable::SymbolType::SCTN ? reloLine->sectionBase : 0), reloLine->section, reloLine->sectionBase );
 		outputReloTable.push_back(outputReloLine);
 		sctnline->content.replace(reloLine->location*2, 8, bytes);

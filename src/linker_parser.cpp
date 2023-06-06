@@ -185,5 +185,7 @@ void Parser::handleRelocationLine(string line){
 	line = line.substr(delim+1);
 	string symbol = localSymbolTable[symbolIndex]->name;
 
+	cout<<symbol<<" "<<location<<" "<<type<<" "<<currentSection<<endl;
+
 	localReloTable.push_back(new RelocationTable::RelocationTableLine(currentBase + location, type, symbol, addend, currentSection, currentBase));
 }
