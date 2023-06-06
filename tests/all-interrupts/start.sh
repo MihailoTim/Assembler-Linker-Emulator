@@ -10,10 +10,10 @@ ${ASSEMBLER} -o software.o software.s
 ${ASSEMBLER} -o printer.o printer.s
 ${LINKER} -relocatable \
   -o interrupt_routines.o \
-  terminal.o timer.o software.o
+  handler.o terminal.o
 ${LINKER} -relocatable \
   -o code.o \
-  main.o handler.o printer.o
+  main.o timer.o printer.o software.o
 ${LINKER} -hex \
   -place=main@0x40000000 \
   -o program.hex \

@@ -1,5 +1,6 @@
+.extern a
 .global b
 .section data
 b:
-	.word b
+	.word a
 .end

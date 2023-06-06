@@ -13,6 +13,7 @@ ${LINKER} -relocatable \
   a.o b.o c.o d.o e.o
 ${LINKER} -hex \
   -place=main@0x40000000 \
+  -place=data@0x30000000 \
   -o program.hex \
   main.o data.o
   

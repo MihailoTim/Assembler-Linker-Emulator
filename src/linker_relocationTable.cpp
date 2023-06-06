@@ -22,7 +22,7 @@ void RelocationTable::resolveRelocations(){
 		string bytes = Parser::get4BytesLittleEndian(replacement);
 		size_t location = reloLine->location; // OVDE DOHVATI BASE SEKCIJE
 
-		RelocationTable::RelocationTableLine* outputReloLine = new RelocationTable::RelocationTableLine(location, reloLine->type, reloLine->symbol, reloLine->addend, reloLine->section, reloLine->sectionBase );
+		RelocationTable::RelocationTableLine* outputReloLine = new RelocationTable::RelocationTableLine(location, reloLine->type, reloLine->symbol, reloLine->addend + reloLine->sectionBase, reloLine->section, reloLine->sectionBase );
 		outputReloTable.push_back(outputReloLine);
 		sctnline->content.replace(reloLine->location*2, 8, bytes);
 	}
