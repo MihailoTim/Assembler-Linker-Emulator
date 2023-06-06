@@ -5,7 +5,7 @@
 #symtab
 0 0 0 0 0 0 
 1 0 0 0 1 -2 printer
-2 0 0 0 1 -2 counter
+2 0 0 0 1 -2 timer_counter
 3 0 0 0 1 4 isr_timer
 4 0 0 1 0 4 timer_section
 5 0 0 0 0 6 timer_message

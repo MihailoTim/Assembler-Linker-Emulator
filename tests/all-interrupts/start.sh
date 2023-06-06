@@ -9,10 +9,14 @@ ${ASSEMBLER} -o terminal.o terminal.s
 ${ASSEMBLER} -o software.o software.s
 ${ASSEMBLER} -o printer.o printer.s
 ${LINKER} -relocatable \
-  -o reloc.o \
-  handler.o terminal.o timer.o printer.o software.o
+  -o interrupt_routines.o \
+  terminal.o timer.o software.o
+${LINKER} -relocatable \
+  -o code.o \
+  main.o handler.o printer.o
 ${LINKER} -hex \
   -place=main@0x40000000 \
   -o program.hex \
-  main.o handler.o terminal.o timer.o printer.o software.o
+  code.o interrupt_routines.o
+  
 ${EMULATOR} program.hex

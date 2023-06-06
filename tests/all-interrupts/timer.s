@@ -1,4 +1,4 @@
-.extern printer, counter
+.extern printer, timer_counter
 .global isr_timer
 .section timer_section
 isr_timer:
@@ -15,10 +15,10 @@ isr_timer:
 	pop %r2
 	pop %r1
 
-	ld counter, %r1
+	ld timer_counter, %r1
 	ld $1, %r2
 	add %r2, %r1
-	st %r1, counter
+	st %r1, timer_counter
 
 	pop %r2
 	pop %r1
