@@ -42,7 +42,6 @@ void SectionTable::resolveSectionPlacements(){
 }
 
 void SectionTable::upateSectionVirtualAddresses(){
-	size_t totalSize = 0;
 
 	vector<pair<size_t, string>> sortedSections;
 	vector<pair<size_t, string>> sortedPlacedSections;
@@ -58,16 +57,22 @@ void SectionTable::upateSectionVirtualAddresses(){
 	sort(sortedSections.begin(), sortedSections.end());
 	sort(sortedPlacedSections.begin(), sortedPlacedSections.end());
 
+	string lastSection = sortedPlacedSections.rbegin()->second;
+	size_t lastSectionBase = SectionTable::sectionTable[lastSection]->base + SectionTable::sectionTable[lastSection]->content.size()/2;
+	size_t totalSize = lastSectionBase;
+	// size_t totalSize = 0;
+
+
 	auto it = sortedPlacedSections.begin();
 	for(auto section : sortedSections){
 
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section.second];
 		if(sectionPlacements.count(sctnline->name) == 0 && sctnline->content.size()){
-			while(it != sortedPlacedSections.end() && totalSize + sctnline->content.size()/2 > it->first){
-				SectionTableLine* placedSection = sectionTable[it->second];
-				totalSize = it->first + placedSection->content.size()/2;
-				it++;
-			}
+			// while(it != sortedPlacedSections.end() && totalSize + sctnline->content.size()/2 > it->first){
+			// 	SectionTableLine* placedSection = sectionTable[it->second];
+			// 	totalSize = it->first + placedSection->content.size()/2;
+			// 	it++;
+			// }
 			sctnline->base = totalSize;
 			totalSize += sctnline->content.size()/2;
 			SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[section.second];

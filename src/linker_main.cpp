@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 	}
 	else if(mode == LinkerMode::RELOCATABLE){
 
-		SectionTable::upateSectionVirtualAddresses();
+		//SectionTable::upateSectionVirtualAddresses();
 
 		SymbolTable::updateSymbolVirtualAddresses();
 

@@ -10,6 +10,7 @@ void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolT
 	SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section];
 	if(bind == SymbolBind::LOC)
 		return;
+	// cout<<"Name: "<<name<<" Type: "<<type<<endl;
 	if(symbolTable.count(name)){
 		SymbolTableLine *stline = symbolTable[name];
 		if(stline->type == SymbolType::SCTN && type == SymbolType::SCTN)
@@ -27,7 +28,7 @@ void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolT
 			stline->offset = sctnline->content.size()/2 + value;
 			return;
 		}
-		throw new Exception("Multiple definitions of same symbol");
+		throw new Exception("Multiple definitions of same symbol "+name);
 	}
 	size_t n = symbolTable.size();
 	// cout<<"SECTION: "<<sctnline->name<<endl;

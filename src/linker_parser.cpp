@@ -161,6 +161,10 @@ void Parser::handleSymbolTableLine(string line){
 	line = line.substr(delim+1);
 	string name = line;
 
+	if(name == "terminal_section"){
+		cout<<"Name: "<<name<< " Type: "<<type<<endl;
+	}
+
 	SymbolTable::SymbolTableLine *stline = new SymbolTable::SymbolTableLine(num, value, 0, type, bind, ndx, name);
 
 	for(auto line : localSymbolTable){

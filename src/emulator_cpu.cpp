@@ -49,7 +49,7 @@ void CPU::emulate(size_t startdAddr){
 			if(isTerminalInterruptEnabled() && isInterruptEnabled()){
 				Terminal::getChar();
 			}
-			if(cause == 3 && isInterruptEnabled() && isTerminalInterruptEnabled() && interruptQueue.size()){
+			if((cause == 3 || cause == 4) && isInterruptEnabled() && isTerminalInterruptEnabled() && interruptQueue.size()){
 				executePush(status);
 				executePush(pc);
 				status |= 0x7;
@@ -87,11 +87,8 @@ size_t CPU::emulateHalt(const vector<uint8_t>& bytes) {
 
 size_t CPU::emulateInt(const vector<uint8_t>& bytes) {
     if(bytes[0] == 1<<4){
-		executePush(status);
-		executePush(pc);
-		cause = 4;
-		status = status & (~1UL);
-		pc = handler;
+		cause = CAUSE_INT;
+		interruptQueue.push_back(CAUSE_INT);
 		return CAUSE_INT;
 	}
     return CAUSE_OPCODE;

@@ -1,5 +1,5 @@
 .extern handler, return_from_call, printer
-.global message, call_printer, my_counter
+.global message, call_printer, my_counter, terminal_section
 
 .section main
 	ld $0xFFFFFF00, %sp
@@ -7,7 +7,7 @@
   	csrwr %r1, %handler
 wait:
 	jmp wait
-
+terminal_section:
 call_printer:
 	call printer
 	jmp return_from_call
