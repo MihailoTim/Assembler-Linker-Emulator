@@ -14,7 +14,12 @@ int main(int argc, char** argv){
 		throw new Exception("Couldn't open file");
 	}
 
-	Memory::loadIntoMemory(in);
+	try{
+		Memory::loadIntoMemory(in);
+	}
+	catch(exception e){
+		throw new Exception("Can't parse input file\n");
+	}
 
 	CPU::emulate(0x40000000);
 

@@ -1,0 +1,36 @@
+#shdr
+0 0 
+0 16 messages
+0 96 timer_section
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 -2 printer
+2 0 0 0 1 -2 counter
+3 0 0 0 1 4 isr_timer
+4 0 0 1 0 4 timer_section
+5 0 0 0 0 6 timer_message
+6 0 0 1 0 6 messages
+#
+#.rela.
+#messages
+54 49 4d 45 52 20 49 4e 
+54 45 52 52 55 50 54 00
+#.rela.messages
+#timer_section
+81 e0 1f fc 81 e0 2f fc 
+92 1f 00 3c 92 2f 00 3c 
+81 e0 1f fc 81 e0 2f fc 
+21 f0 00 34 93 2e 00 04 
+93 1e 00 04 92 1f 00 2c 
+92 11 00 00 92 2f 00 28 
+50 11 20 00 82 f0 10 24 
+93 2e 00 04 93 1e 00 04 
+93 fe 00 04 30 f0 00 18 
+00 00 00 00 0f 00 00 00 
+00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00
+#.rela.timer_section
+72 R_32 6 0
+80 R_32 1 0
+84 R_32 2 0
+92 R_32 2 0
