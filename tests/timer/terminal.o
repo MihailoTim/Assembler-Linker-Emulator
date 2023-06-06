@@ -1,0 +1,12 @@
+#shdr
+0 0 
+0 4 terminal_section
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 2 isr_terminal
+2 0 0 1 0 2 terminal_section
+#
+#.rela.
+#terminal_section
+93 fe 00 04
+#.rela.terminal_section

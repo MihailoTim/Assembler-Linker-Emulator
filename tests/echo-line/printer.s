@@ -22,6 +22,11 @@ loop:
 	ld $0, %r1
 	st %r1, my_counter
 
+	ld 0xFFFFFF10, %r1
+	ld $0x01, %r2
+	add %r2, %r1
+	st %r1, 0xFFFFFF10
+
 	pop %r4
 	pop %r3
 	pop %r2

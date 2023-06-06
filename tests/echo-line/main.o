@@ -7,13 +7,12 @@
 1 0 0 0 1 -2 handler
 2 0 0 0 1 -2 return_from_call
 3 0 0 0 1 -2 printer
-4 4 0 0 1 10 message
-5 16 0 0 1 8 call_printer
-6 0 0 0 1 10 my_counter
-7 16 0 0 1 8 terminal_section
-8 0 0 1 0 8 main
-9 12 0 0 0 8 wait
-10 0 0 1 0 10 data
+4 4 0 0 1 9 message
+5 16 0 0 1 7 call_printer
+6 0 0 0 1 9 my_counter
+7 0 0 1 0 7 main
+8 12 0 0 0 7 wait
+9 0 0 1 0 9 data
 #
 #.rela.
 #data
@@ -40,6 +39,6 @@
 00 00 00 00 00 00 00 00
 #.rela.main
 32 R_32 1 0
-36 R_32 8 12
+36 R_32 7 12
 40 R_32 3 0
 44 R_32 2 0

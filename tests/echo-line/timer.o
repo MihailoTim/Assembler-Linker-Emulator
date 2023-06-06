@@ -1,6 +1,6 @@
 #shdr
 0 0 
-0 4 timer_section
+0 24 timer_section
 #symtab
 0 0 0 0 0 0 
 1 0 0 0 1 2 isr_timer
@@ -8,5 +8,7 @@
 #
 #.rela.
 #timer_section
-93 fe 00 04
+92 1f 00 0c 82 f0 10 0c 
+93 fe 00 04 30 f0 00 08 
+61 00 00 00 00 ff ff ff
 #.rela.timer_section

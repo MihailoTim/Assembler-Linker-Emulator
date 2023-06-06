@@ -2,6 +2,7 @@
 #include "../inc/emulator_memory.hpp"
 #include "../inc/emulator_exceptions.hpp"
 #include "../inc/emulator_terminal.hpp"
+#include "../inc/emulator_timer.hpp"
 #include <iomanip>
 #include <algorithm>
 
@@ -25,6 +26,7 @@ void CPU::emulate(size_t startdAddr){
 	sp = STACK_BASE;
 	size_t ret = 0;
 	Terminal::initialize();
+	Timer::initialize();
 	while(ret == 0){
 		// cout<<"PC: "<<hex<<pc<<endl;
 		r[0] = 0;
@@ -46,15 +48,31 @@ void CPU::emulate(size_t startdAddr){
 			throw new Exception("Opcode not recognized\n");
 		}
 		else{
+			if(isTimerInterruptEnabled() && isInterruptEnabled()){
+				Timer::tick();
+			}
 			if(isTerminalInterruptEnabled() && isInterruptEnabled()){
 				Terminal::getChar();
 			}
-			if((cause == 3 || cause == 4) && isInterruptEnabled() && isTerminalInterruptEnabled() && interruptQueue.size()){
+			if(cause == 2 && isInterruptEnabled() && isTimerInterruptEnabled() && interruptQueue.size()){
 				executePush(status);
 				executePush(pc);
 				status |= 0x7;
 				pc = handler;
-				interrupt_count++;
+				interruptQueue.clear();
+			}	
+			else if(cause == 3 && isInterruptEnabled() && isTerminalInterruptEnabled() && interruptQueue.size()){
+				executePush(status);
+				executePush(pc);
+				status |= 0x7;
+				pc = handler;
+				interruptQueue.clear();
+			}
+			else if((cause == 4) && isInterruptEnabled() && interruptQueue.size()){
+				executePush(status);
+				executePush(pc);
+				status |= 0x7;
+				pc = handler;
 				interruptQueue.clear();
 			}
 			ret = 0;

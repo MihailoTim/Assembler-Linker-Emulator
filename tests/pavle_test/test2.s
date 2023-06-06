@@ -19,9 +19,9 @@ papa_terminal:
 handler2:
   push %r1
   push %r2
-  # csrrd %cause, %r1
-  # ld $2, %r2
-  # beq %r1, %r2, papa_timer
+  csrrd %cause, %r1
+  ld $2, %r2
+  beq %r1, %r2, papa_timer
   jmp papa_timer
 papa_timer:
   call inc_my_counter
