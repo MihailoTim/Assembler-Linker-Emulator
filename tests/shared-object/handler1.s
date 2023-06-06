@@ -21,6 +21,7 @@ handle_timer:
     jmp finish
 # obrada prekida od terminala
 handle_terminal:
+    ld $0x61, %r10
     call isr_terminal
     jmp finish
 # obrada softverskog prekida

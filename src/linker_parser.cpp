@@ -184,8 +184,13 @@ void Parser::handleRelocationLine(string line){
 	int addend = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	string symbol = localSymbolTable[symbolIndex]->name;
+	size_t sectionNdx = localSymbolTable[symbolIndex]->ndx;
+	
+	size_t sectionBase = 0;
 
-	cout<<symbol<<" "<<location<<" "<<type<<" "<<currentSection<<endl;
+	if(localSymbolTable[symbolIndex]->type == SymbolTable::SymbolType::SCTN){
+		sectionBase = SectionTable::sectionTable[symbol]->content.size()/2;
+	}
 
-	localReloTable.push_back(new RelocationTable::RelocationTableLine(currentBase + location, type, symbol, addend, currentSection, currentBase));
+	localReloTable.push_back(new RelocationTable::RelocationTableLine(currentBase + location, type, symbol, addend, currentSection, sectionBase));
 }

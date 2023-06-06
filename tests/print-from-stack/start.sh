@@ -11,7 +11,7 @@ ${ASSEMBLER} -o printer.o printer.s
 ${LINKER} -relocatable \
   -o reloc.o \
   handler.o terminal.o timer.o printer.o software.o
-${LINKER} -relocatable \
+${LINKER} -hex \
   -place=main@0x40000000 \
   -o program.hex \
   main.o handler.o terminal.o timer.o printer.o software.o
