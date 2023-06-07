@@ -1,6 +1,7 @@
 #include "../inc/linker_sectionTable.hpp"
 #include "../inc/linker_symbolTable.hpp"
 #include "../inc/linker_relocationTable.hpp"
+#include "../inc/linker_exceptions.hpp"
 #include <algorithm>
 #include <fstream>
 
@@ -33,8 +34,28 @@ void SectionTable::addNewSectionPlacement(string section, size_t location){
 	sectionPlacements.insert(make_pair(section, location));
 }
 
+bool SectionTable::isOverlapping(size_t base1, size_t size1, size_t base2, size_t size2){
+	return max(base1,base2) <= min(base1+size1,base2+size2);
+}
+
+void SectionTable::checkCollisions(string section, size_t base){
+	size_t sizeFirst = sectionTable[section]->content.size()/2;
+	for(auto it = sectionPlacements.begin(); it!=sectionPlacements.end(); it++){
+		size_t sizeSecond = sectionTable[it->first]->content.size()/2;
+		if(section != it->first && isOverlapping(base, sizeFirst, it->second, sizeSecond)){
+			throw new Exception("Clash detected when placing sections: " + section + " and " + it->first);
+		}
+	}
+}
+
 void SectionTable::resolveSectionPlacements(){
 	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
+		if(sectionTable.count(it->first) == 0){
+			throw new Exception("Unrecognized section in -place: " + it->first);
+		}
+	}
+	for(auto it = sectionPlacements.begin(); it!= sectionPlacements.end(); it++){
+		checkCollisions(it->first, it->second);
 		sectionTable[it->first]->base = it->second;
 		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[it->first];
 		stline->virtualAddress = sectionTable[it->first]->base;

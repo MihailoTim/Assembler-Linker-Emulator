@@ -12,6 +12,7 @@ ${LINKER} -relocatable \
   handler.o terminal.o timer.o software.o
 ${LINKER} -hex \
   -place=main@0x40000000 \
+  -place=data@0x40000010 \
   -o program.hex \
   reloc.o main.o
 ${EMULATOR} program.hex

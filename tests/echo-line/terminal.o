@@ -1,0 +1,38 @@
+#shdr
+0 0 
+0 140 terminal_section
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 -2 call_printer
+2 0 0 0 1 -2 message
+3 0 0 0 1 -2 my_counter
+4 0 0 0 1 6 isr_terminal
+5 76 0 0 1 6 return_from_call
+6 0 0 1 0 6 terminal_section
+#
+#.rela.
+#terminal_section
+81 e0 1f fc 81 e0 2f fc 
+81 e0 3f fc 81 e0 4f fc 
+92 4f 00 50 92 1f 00 50 
+92 11 00 00 82 f0 10 4c 
+92 3f 00 4c 92 33 00 00 
+50 44 30 00 80 40 10 00 
+92 4f 00 40 50 33 40 00 
+82 f0 30 3c 92 2f 00 3c 
+39 f1 20 3c 92 4f 00 3c 
+39 f3 40 3c 93 4e 00 04 
+93 3e 00 04 93 2e 00 04 
+93 1e 00 04 93 fe 00 04 
+30 f0 00 28 00 00 00 00 
+04 ff ff ff 00 ff ff ff 
+00 00 00 00 01 00 00 00 
+00 00 00 00 0a 00 00 00 
+00 00 00 00 14 00 00 00 
+00 00 00 00
+#.rela.terminal_section
+100 R_32 2 0
+112 R_32 3 0
+120 R_32 3 0
+128 R_32 1 0
+136 R_32 1 0

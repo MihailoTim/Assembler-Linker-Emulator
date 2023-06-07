@@ -33,4 +33,8 @@ public:
 	static void printSectionHeadersToOutput(ofstream &out);
 
 	static void printSectionContentToOutput(ofstream &out);
+
+	static void checkCollisions(string section, size_t base);
+
+	static bool isOverlapping(size_t base1, size_t size1, size_t base2, size_t size2);
 };
