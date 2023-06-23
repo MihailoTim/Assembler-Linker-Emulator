@@ -13,6 +13,8 @@ class RelocationTable{
 public:
 	friend class SecondPass;
 	friend class LiteralPool;
+	friend class EquTable;
+	friend class SymbolTable;
 private:
 	struct RelocationTableLine{
 		enum RelocationType{R_32, R_PC32};

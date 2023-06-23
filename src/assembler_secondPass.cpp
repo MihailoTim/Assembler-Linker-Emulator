@@ -3,6 +3,7 @@
 #include <map>
 #include "../inc/assembler_secondPass.hpp"
 #include "../inc/assembler_literalPool.hpp"
+#include "../inc/assembler_equtable.hpp"
 
 string SecondPass::currentSection = "";
 size_t SecondPass::locationCounter = 0;
@@ -27,9 +28,6 @@ void SecondPass::start(){
 	setSymbolTable(&SymbolTable::getInstance());
 	performBetweenPassCheck();
 	performLineByLine();
-	// symbolTable->printAllSections();
-	// symbolTable->printSymbolTable();
-	// symbolTable->printSectionTable();
 	dumpContentToFile();
 }
 
@@ -369,6 +367,9 @@ int SecondPass::handleBranchArgument(Argument *arg, bool &useDispl){
 		// 	}
 		// }
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+			EquTable::handleEquReference(symline.name, line);
+		}
 		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::INDIRECT, locationCounter + 4);
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 	}
@@ -383,6 +384,9 @@ int SecondPass::handleCallArgument(Argument *arg){
 	if(arg->argType == ArgumentType::SYM){
 		SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 		RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
+		if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+			EquTable::handleEquReference(symline.name, line);
+		}
 		LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
 		symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::INDIRECT, locationCounter+4);
 	}
@@ -399,6 +403,9 @@ int SecondPass::handleLoadArgument(Argument *arg){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
+			if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+				EquTable::handleEquReference(symline.name, line);
+			}
 		}
 		if(arg->argType == ArgumentType::LITERAL){
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -407,8 +414,11 @@ int SecondPass::handleLoadArgument(Argument *arg){
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
 			throw new Exception("Symbol whose value cannot be determined is being used in regind addressing");
-			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			// symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+				EquTable::handleEquReference(symline.name, nullptr);
+			}
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))
@@ -427,6 +437,9 @@ int SecondPass::handleStoreArgument(Argument *arg){
 			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
 			RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter + 2, RelocationTable::RelocationType::R_32, arg->stringVal);
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, symline.value, line);
+			if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+				EquTable::handleEquReference(symline.name, line);
+			}
 		}
 		if(arg->argType == ArgumentType::LITERAL){
 			LiteralPool::handleNewLiteralPoolEntry(locationCounter+2, arg->intVal, nullptr);
@@ -435,8 +448,11 @@ int SecondPass::handleStoreArgument(Argument *arg){
 	if(arg->addrType == AddressType::REGINDOFF){
 		if(arg->argType == ArgumentType::REGPLUSSYM){
 			throw new Exception("Symbol whose value cannot be determined is being used in regind addressing");
-			// SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
-			// symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			SymbolTable::SymbolTableLine &symline = symbolTable->symbolTable[arg->stringVal];
+			symline.addNewReference(locationCounter, SymbolTable::ReferenceLocation::DIRECT, 0);
+			if(symline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+				EquTable::handleEquReference(symline.name, nullptr);
+			}
 		}
 		if(arg->argType == ArgumentType::REGPLUSLIT){
 			if(canFitInDispl(stoi(arg->stringVal), 0))

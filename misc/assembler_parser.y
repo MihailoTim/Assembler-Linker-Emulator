@@ -58,7 +58,7 @@
 %type <stringVal> instructionST
 %type <stringVal> instructionJMP
 %type <stringVal> instructionCALL
-%type <stringVal> expression
+%type <stringVector> expression
 %type <stringVal> operand
 %type <stringVal> branchOperand
 %type <stringVal> comment
@@ -365,9 +365,10 @@ directive:
     } |
     EQU symbol COMMA expression {
         currentLine->mnemonic = ".equ";
-        firstPass.handleEquDirective(*$2);
+
         currentLine->args.push_back(new Argument(0, *$2, ArgumentType::SYM, AddressType::MEMDIR, false));
-        currentLine->args.push_back(delayedOperand);
+
+        firstPass.handleEquDirective(*$2, *$4);
     } | 
     END {
         currentLine->mnemonic = ".end";
@@ -477,24 +478,35 @@ csrreg:
 
 expression:
     symbol {
-        delayedOperand = new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false);
-        firstPass.handleSymbolReference(*$1);
-        $$ = $1;
+        $$ = new vector<string>();
+        currentLine->args.push_back(new Argument(0, *$1, ArgumentType::SYM, AddressType::MEMDIR, false));
+        $$->push_back(*$1);
     } | 
     literal {
-        delayedOperand = new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false);
-        $$ = new string(to_string($1));
+        $$ = new vector<string>();
+        currentLine->args.push_back(new Argument($1, to_string($1), ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        $$->push_back(to_string($1));
     } | 
     expression PLUS symbol{
-
+        currentLine->args.push_back(new Argument(0, *$3, ArgumentType::SYM, AddressType::MEMDIR, false));
+        $$->push_back("+");
+        $$->push_back(*$3);
     } | 
     expression PLUS literal{
-
+        currentLine->args.push_back(new Argument($3, to_string($3), ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        $$->push_back("+");
+        $$->push_back(to_string($3));
     } |
     expression MINUS symbol{
-         
+        currentLine->args.push_back(new Argument(0, *$3, ArgumentType::SYM, AddressType::MEMDIR, false));
+        $$->push_back("-");
+        $$->push_back(*$3);
     } |
-    expression MINUS literal{}
+    expression MINUS literal{
+        currentLine->args.push_back(new Argument($3, to_string($3), ArgumentType::LITERAL, AddressType::MEMDIR, false));
+        $$->push_back("-");
+        $$->push_back(to_string($3));
+    }
 
 comment:
     COMMENT{

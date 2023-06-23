@@ -13,7 +13,7 @@ class SymbolTable{
 public:
 	enum SymbolSection{EXTERN=-2, GLOBAL=-1, UNDEFINED=0};
 	enum SymbolBind{LOC, GLOB, UNBOUND};
-	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
+	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND, EQU_LITERAL, EQU_SYMBOL, EQU_UNRESOLVED};
 	enum ReferenceLocation{DIRECT, INDIRECT};
 
 	static SymbolTable& getInstance(){
@@ -53,6 +53,7 @@ public:
 	friend class SecondPass;
 	friend class RelocationTable;
 	friend class LiteralPool;
+	friend class EquTable;
 private:
 	struct Reference{
 		size_t locationCounter;

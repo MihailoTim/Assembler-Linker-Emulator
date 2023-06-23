@@ -1,5 +1,7 @@
 #include <iostream>
 #include "../inc/assembler_symbolTable.hpp"
+#include "../inc/assembler_assemblyLine.hpp"
+#include "../inc/assembler_equtable.hpp"
 
 class FirstPass{
 public:
@@ -28,7 +30,7 @@ public:
 
 	inline void handleAsciiDirective(string str){}
 
-	inline void handleEquDirective(string symbol){symbolTable.handleEquDirective(symbol, locationCounter);}
+	inline void handleEquDirective(string symbol, vector<string> expression){symbolTable.handleEquDirective(symbol, locationCounter); EquTable::handleNewEquEntry(symbol, expression);}
 
 	inline void handleLabel(string symbol){symbolTable.handleLabel(symbol, locationCounter);}
 

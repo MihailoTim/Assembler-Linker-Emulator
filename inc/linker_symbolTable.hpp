@@ -10,7 +10,7 @@ class SymbolTable{
 public:
 	enum SymbolSection{EXTERN=-2, GLOBAL=-1, UNDEFINED=0};
 	enum SymbolBind{LOC, GLOB, UNBOUND};
-	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND};
+	enum SymbolType{NOTYPE, SCTN, OBJ, FUNC, UND, EQU_LITERAL, EQU_SYMBOL};
 	enum ReferenceLocation{DIRECT, INDIRECT};
 
 	struct SymbolTableLine{
