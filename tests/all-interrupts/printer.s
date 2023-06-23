@@ -1,4 +1,6 @@
 .global printer
+.extern term_out
+.equ LF, 0xFFFFFF00 - term_out + 0x0A
 
 .section printer_function
 printer:
@@ -13,15 +15,15 @@ printer:
 	add %r1, %r3
 loop:
 	ld [%r3], %r4
-	st %r4, 0xFFFFFF00
+	st %r4, term_out
 	ld $1, %r1
 	add %r1, %r3
 	bne %r3, %r2, loop
 
-	ld $0xD, %r1
-	st %r1, 0xFFFFFF00
-	ld $0xA, %r1
-	st %r1, 0xFFFFFF00
+	ld $0x0D, %r1
+	st %r1, term_out
+	ld $LF, %r1
+	st %r1, term_out
 
 	pop %r4
 	pop %r3

@@ -145,7 +145,7 @@ void Parser::handleSymbolTableLine(string line){
 	size_t num = stol(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
-	size_t value = stol(line.substr(0, delim));
+	size_t value = stoull(line.substr(0, delim));
 	line = line.substr(delim+1);
 	delim = line.find(" ");
 	size_t size = stol(line.substr(0, delim));

@@ -14,6 +14,9 @@ RelocationTable::RelocationTableLine* RelocationTable::handleNewReloLine(size_t 
 
 SymbolTable::SymbolTableLine RelocationTable::getSymbolToReference(string symbol){
 	SymbolTable::SymbolTableLine stline = symbolTable.symbolTable[symbol];
+	if(stline.type == SymbolTable::SymbolType::EQU_UNRESOLVED){
+		return stline;
+	}
 	while(stline.type != SymbolTable::SymbolType::SCTN && stline.bind != SymbolTable::SymbolBind::GLOB && stline.num != 0){
 		string nextSymbol = symbolTable.symbolLookupTable[stline.ndx];
 		stline = symbolTable.symbolTable[nextSymbol];

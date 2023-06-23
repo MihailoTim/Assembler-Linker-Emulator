@@ -51,11 +51,6 @@ void EquTable::resolveEquSymbols(){
 
   for(auto it = equTable.begin(); it!=equTable.end(); it++){
     equSet.insert(it->first);
-    cout<<it->first<<": ";
-    for(auto s : it->second->args){
-      cout<<s->stringVal<<" ";
-    }
-    cout<<endl;
   }
 
   while(equSet.size() > 0){
@@ -155,10 +150,8 @@ void EquTable::handleEquReference(string symbol, RelocationTable::RelocationTabl
 }
 
 void EquTable::fixEquRelocations(){
-  cout<<"FIXING EQU RELOCATIONS: "<<equReferences.size()<<endl;
   for(auto ref : equReferences){
     SymbolTable::SymbolTableLine *stline = &symbolTable->symbolTable[ref->symbol];
-    cout<<ref->symbol<<" "<<stline->value<<" "<<stline->ndx<<endl;
     ref->reloline->addend = stline->value;
     ref->reloline->referencedSymbol = stline->ndx;
   }

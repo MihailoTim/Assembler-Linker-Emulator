@@ -7,6 +7,10 @@ map<string, SymbolTable::SymbolTableLine*> SymbolTable::symbolTable;
 map<int, string> SymbolTable::symbolLookupTable;
 
 void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section){
+	if(type == SymbolType::EQU_SYMBOL || type==SymbolType::EQU_LITERAL){
+		insertNewEquSymbol(num, value, size, type, bind, ndx, name, section);
+		return;
+	}
 	SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[section];
 	if(bind == SymbolBind::LOC)
 		return;
@@ -41,6 +45,30 @@ void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolT
 	symbolLookupTable.insert(make_pair(n, name));
 }
 
+void SymbolTable::insertNewEquSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section){
+	// cout<<"Name: "<<name<<" Type: "<<type<<endl;
+	if(symbolTable.count(name)){
+		SymbolTableLine *stline = symbolTable[name];
+		if(stline->type == SymbolType::SCTN && type == SymbolType::SCTN)
+			return;
+		if(stline->ndx == SymbolSection::EXTERN && ndx == SymbolSection::EXTERN)
+			return;
+		if(stline->ndx != SymbolSection::EXTERN && ndx == SymbolSection::EXTERN){			
+			return;
+		}
+		if(stline->ndx == SymbolSection::EXTERN && ndx != SymbolSection::EXTERN){
+			stline->ndx = symbolTable[section]->num;
+			return;
+		}
+		throw new Exception("Multiple definitions of same symbol "+name);
+	}
+	size_t n = symbolTable.size();
+	int index = ndx > 0 ? symbolTable[section]->num : ndx;
+	SymbolTableLine *stline = new SymbolTableLine(n, value, 0, type, bind, index, name);
+	symbolTable.insert(make_pair(name, stline));
+	symbolLookupTable.insert(make_pair(n, name));
+}
+
 void SymbolTable::printSymbolTable(){
 	cout<<"#symtab"<<endl;
 	for(auto it = symbolLookupTable.begin(); it!=symbolLookupTable.end();it++){
@@ -55,7 +83,7 @@ void SymbolTable::printSymbolTable(){
 
 void SymbolTable::updateSymbolVirtualAddresses(){
 	for(auto it = SymbolTable::symbolTable.begin(); it != SymbolTable::symbolTable.end(); it++){
-		if(it->second->ndx <0)
+		if(it->second->ndx <0 || it->second->type == SymbolType::EQU_SYMBOL || it->second->type == SymbolType::EQU_LITERAL)
 			continue;
 		string section = SymbolTable::symbolLookupTable[it->second->ndx];
 		SectionTable::SectionTableLine *sctn = SectionTable::sectionTable[section];
@@ -68,7 +96,7 @@ void SymbolTable::updateSymbolVirtualAddresses(){
 
 bool SymbolTable::checkHexCompatible(){
 	for(auto it = SymbolTable::symbolTable.begin(); it!= SymbolTable::symbolTable.end(); it++){
-		if(it->second->ndx < 0)
+		if(it->second->ndx < 0 && it->second->type != SymbolType::EQU_LITERAL && it->second->type != SymbolType::EQU_SYMBOL)
 			return false;
 	}
 	return true;

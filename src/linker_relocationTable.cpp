@@ -18,7 +18,20 @@ void RelocationTable::resolveRelocations(){
 		SymbolTable::SymbolTableLine *stline = SymbolTable::symbolTable[reloLine->symbol];
 		SymbolTable::SymbolTableLine *referencePoint = SymbolTable::symbolTable[stline->name];
 		SectionTable::SectionTableLine *sctnline = SectionTable::sectionTable[reloLine->section];
-		size_t replacement = reloLine->sectionBase + stline->virtualAddress + reloLine->addend;
+		size_t replacement = 0;
+		if(stline->type != SymbolTable::SymbolType::EQU_LITERAL && stline->type != SymbolTable::SymbolType::EQU_SYMBOL){
+			replacement = reloLine->sectionBase + stline->virtualAddress + reloLine->addend;
+		}
+		else{
+			if(stline->type == SymbolTable::SymbolType::EQU_LITERAL){
+				replacement = stline->offset;
+			}
+			else{
+				string ref = SymbolTable::symbolLookupTable[stline->ndx];
+				SymbolTable::SymbolTableLine* refLine = SymbolTable::symbolTable[ref];
+				replacement = stline->offset + refLine->virtualAddress;
+			}
+		}
 		string bytes = Parser::get4BytesLittleEndian(replacement);
 		size_t location = reloLine->location; // OVDE DOHVATI BASE SEKCIJE
 

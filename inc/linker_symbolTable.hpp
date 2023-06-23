@@ -32,6 +32,8 @@ public:
 
 	static void insertNewSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section);
 
+	static void insertNewEquSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section);
+
 	static void updateSymbolVirtualAddresses();
 
 	static bool checkHexCompatible();

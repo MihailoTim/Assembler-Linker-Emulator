@@ -74,14 +74,19 @@ void SectionTable::upateSectionVirtualAddresses(){
 		}
 	}
 
-
 	sort(sortedSections.begin(), sortedSections.end());
 	sort(sortedPlacedSections.begin(), sortedPlacedSections.end());
 
-	string lastSection = sortedPlacedSections.rbegin()->second;
-	size_t lastSectionBase = SectionTable::sectionTable[lastSection]->base + SectionTable::sectionTable[lastSection]->content.size()/2;
-	size_t totalSize = lastSectionBase;
-	// size_t totalSize = 0;
+
+
+
+	size_t totalSize = 0;
+
+	if(sortedPlacedSections.size()){
+		string lastSection = sortedPlacedSections.rbegin()->second;
+		size_t lastSectionBase = SectionTable::sectionTable[lastSection]->base + SectionTable::sectionTable[lastSection]->content.size()/2;
+		totalSize = lastSectionBase;
+	}
 
 
 	auto it = sortedPlacedSections.begin();

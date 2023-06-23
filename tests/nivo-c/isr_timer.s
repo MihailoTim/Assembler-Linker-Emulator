@@ -3,6 +3,7 @@
 .section isr
 # prekidna rutina za tajmer
 .global isr_timer
+.equ message_len, message_end - message_start
 isr_timer:
     push %r1
     push %r2
@@ -15,7 +16,7 @@ loop:
     st %r3, 0xFFFFFF00
     ld $1, %r1
     add %r1, %r2
-    ld $15, %r1
+    ld $message_len, %r1
     bne %r1, %r2, loop
     ld $0xA, %r1
     st %r1, 0xFFFFFF00

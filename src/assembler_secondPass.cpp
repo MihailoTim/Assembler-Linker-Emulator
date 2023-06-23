@@ -28,6 +28,7 @@ void SecondPass::start(){
 	setSymbolTable(&SymbolTable::getInstance());
 	performBetweenPassCheck();
 	performLineByLine();
+	EquTable::resolveEquSymbols();
 	dumpContentToFile();
 }
 
@@ -75,6 +76,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 	sctnline.length = locationCounter - sctnline.base;
 	fixSymbolReferences();
 	fixReloTable();
+	EquTable::fixEquRelocations();
 	LiteralPool::changeSection();
 	sctnline.reloTable = reloTable->getContent();
 	currentSection = line->args[0]->stringVal;
@@ -134,6 +136,7 @@ void SecondPass::handleEndDirective(AssemblyLine* line){
 	LiteralPool::dumpPool(sctnline.content, locationCounter);
 	fixSymbolReferences();
 	fixReloTable();
+	EquTable::fixEquRelocations();
 	sctnline.length = locationCounter - sctnline.base;
 	sctnline.reloTable = reloTable->getContent();
 }
