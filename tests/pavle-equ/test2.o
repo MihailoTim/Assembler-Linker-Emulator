@@ -1,0 +1,21 @@
+#shdr
+0 0 
+0 28 papa_main
+#symtab
+0 0 0 0 0 0 
+1 0 0 0 1 -2 papa_end2
+2 0 0 0 1 -2 ascii_out
+3 0 0 0 1 -2 term_out
+4 0 0 0 1 5 papa_end1
+5 0 0 1 0 5 papa_main
+#
+#.rela.
+#papa_main
+92 7f 00 0c 82 f0 70 0c 
+38 f0 00 0c 30 f0 00 0c 
+00 00 00 00 00 00 00 00 
+00 00 00 00
+#.rela.papa_main
+16 R_32 2 0
+20 R_32 3 0
+24 R_32 1 0

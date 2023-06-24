@@ -38,9 +38,21 @@ void SymbolTable::handleSectionDirective(string symbol, size_t locationCounter){
 		currentSection = symbol;
 		SectionTableLine newSctLine = *new SectionTableLine(0, 0, symbol, this->count);
 		sectionTable.insert(make_pair(symbol, newSctLine));
-		int num = this->count++;
-		SymbolTableLine *stline = handleNewSymbol(num, 0, 0,SymbolType::SCTN, SymbolBind::LOC, num, symbol);
-		symbolTable.insert(make_pair(symbol, *stline));
+		if(symbolTable.count(symbol)>0){
+			SymbolTableLine *stline = &symbolTable[symbol];
+			if(stline->bind == SymbolBind::UNBOUND){
+				stline->type = SymbolType::SCTN;
+				stline->bind = SymbolBind::LOC;
+			}
+			else{
+				throw new Exception("Multiple definitions of symbol " + symbol);
+			}
+		}
+		else{
+			int num = this->count++;
+			SymbolTableLine *stline = handleNewSymbol(num, 0, 0,SymbolType::SCTN, SymbolBind::LOC, num, symbol);
+			symbolTable.insert(make_pair(symbol, *stline));
+		}
 	}
 }
 

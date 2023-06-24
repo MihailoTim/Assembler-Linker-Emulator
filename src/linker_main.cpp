@@ -51,11 +51,14 @@ int main(int argc, char** argv) {
 
 
 	if(mode == LinkerMode::HEX){
+
 		SectionTable::resolveSectionPlacements();
 
 		SectionTable::upateSectionVirtualAddresses();
 
 		SymbolTable::updateSymbolVirtualAddresses();
+
+		SymbolTable::updateEquSymbolVirtualAddresses();
 
 		RelocationTable::resolveRelocations();
 		bool check = SymbolTable::checkHexCompatible();
@@ -69,6 +72,8 @@ int main(int argc, char** argv) {
 		//SectionTable::upateSectionVirtualAddresses();
 
 		SymbolTable::updateSymbolVirtualAddresses();
+
+		SymbolTable::updateEquSymbolVirtualAddresses();
 
 		RelocationTable::resolveRelocations();
 

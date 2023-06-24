@@ -96,11 +96,13 @@ bool EquTable::resolveSingleSymbol(string symbol){
           return false;
         
         if(arg->isSigned){
-          sectionCount[stline->ndx]--;
+          if(stline->type != SymbolTable::SymbolType::EQU_LITERAL)
+            sectionCount[stline->ndx]--;
           addend -= stline->value;
         }
         else{
-          sectionCount[stline->ndx]++;
+          if(stline->type != SymbolTable::SymbolType::EQU_LITERAL)
+            sectionCount[stline->ndx]++;
           addend += stline->value;
         }
       }
@@ -113,16 +115,16 @@ bool EquTable::resolveSingleSymbol(string symbol){
     }
   }
 
-  size_t sum = 0;
+  int sum = 0;
   size_t section = -1;
   for(auto it = sectionCount.begin(); it!=sectionCount.end(); it++){
-    sum += it->second;
+    sum += (it->second != 0);
     if(it->second){
       section = it->first;
     }
   }
 
-  if(sum > 1 || externCount > 1 || (sum > 0 && externCount >0)){
+  if(sum > 1 || externCount > 1 || (sum != 0 && externCount > 0)){
     return false;
   }
   SymbolTable::SymbolTableLine *stline = &symbolTable->symbolTable[symbol];

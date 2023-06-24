@@ -58,6 +58,8 @@ void SymbolTable::insertNewEquSymbol(size_t num, size_t value, size_t size, Symb
 		}
 		if(stline->ndx == SymbolSection::EXTERN && ndx != SymbolSection::EXTERN){
 			stline->ndx = symbolTable[section]->num;
+			stline->offset = value;
+			stline->type = type;
 			return;
 		}
 		throw new Exception("Multiple definitions of same symbol "+name);
@@ -91,6 +93,30 @@ void SymbolTable::updateSymbolVirtualAddresses(){
 			it->second->virtualAddress = sctn->base + it->second->offset;
 		else
 			it->second->offset = 0;
+	}
+}
+
+void SymbolTable::updateEquSymbolVirtualAddresses(){
+	for(auto it = SymbolTable::symbolTable.begin(); it != SymbolTable::symbolTable.end(); it++){
+		if(it->second->type == SymbolType::EQU_SYMBOL){
+			string refSym = SymbolTable::symbolLookupTable[it->second->ndx];
+			SymbolTable::SymbolTableLine* refLine = SymbolTable::symbolTable[refSym];
+			size_t addend = 0;
+			while(refLine->type == EQU_SYMBOL){
+				addend+=refLine->offset;
+				refSym = SymbolTable::symbolLookupTable[refLine->ndx];
+				if(refSym == it->second->name){
+					throw new Exception("Circular dependency while resovling .equ");
+				}
+				refLine = SymbolTable::symbolTable[refSym];
+			}
+			addend += refLine->virtualAddress;
+			it->second->virtualAddress = it->second->offset + addend;;
+		}
+		else
+			if(it->second->type == SymbolType::EQU_LITERAL){
+				it->second->virtualAddress = it->second->offset;
+			}
 	}
 }
 

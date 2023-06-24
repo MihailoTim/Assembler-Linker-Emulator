@@ -1,6 +1,6 @@
-ASSEMBLER=./asembler
-LINKER=./linker
-EMULATOR=./emulator
+ASSEMBLER=../../asembler
+LINKER=../../linker
+EMULATOR=../../emulator
 
 ${ASSEMBLER} -o test1.o test1.s
 ${ASSEMBLER} -o test2.o test2.s

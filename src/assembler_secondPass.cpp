@@ -89,6 +89,7 @@ void SecondPass::handleSectionDirective(AssemblyLine* line){
 void SecondPass::handleWordDirective(AssemblyLine* line){
 	// cout<<locationCounter<<": WORD"<<endl;
 	for(auto arg : line->args){
+		locationCounter = sectionContent.size()/2;
 		if(arg->argType == ArgumentType::LITERAL){
 			string content = AssemblyInstruction::get4BytesLittleEndian(arg->intVal);
 			// cout<<content<<endl;
@@ -96,7 +97,8 @@ void SecondPass::handleWordDirective(AssemblyLine* line){
 		}
 		else{
 			if(arg->argType == ArgumentType::SYM){
-				reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
+				RelocationTable::RelocationTableLine* line = reloTable->handleNewReloLine(locationCounter,RelocationTable::RelocationType::R_32, arg->stringVal);
+				EquTable::handleEquReference(arg->stringVal, line);
 				string content = "00000000";
 				writeContentToSection(content);
 			}

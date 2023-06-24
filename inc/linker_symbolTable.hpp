@@ -36,6 +36,8 @@ public:
 
 	static void updateSymbolVirtualAddresses();
 
+	static void updateEquSymbolVirtualAddresses();
+
 	static bool checkHexCompatible();
 
 	static void printSymbolTable();
