@@ -1,6 +1,6 @@
 #include "../inc/assembler_relocationTable.hpp"
 
-RelocationTable::RelocationTableLine* RelocationTable::handleNewReloLine(size_t offset, RelocationType type, string symbol){
+RelocationTableLine* RelocationTable::handleNewReloLine(size_t offset, RelocationType type, string symbol){
 	SymbolTable::SymbolTableLine symbolToRelo = symbolTable.symbolTable[symbol];
 	SymbolTable::SymbolTableLine symbolToRef = getSymbolToReference(symbol);
 	long addend = symbolToRelo.value - symbolToRef.value  - (type == RelocationType::R_PC32 ? 4 : 0);
@@ -24,11 +24,12 @@ SymbolTable::SymbolTableLine RelocationTable::getSymbolToReference(string symbol
 	return stline;
 }
 
-vector<string> RelocationTable::getContent(){
-	vector<string> result;
+vector<RelocationTableLine*> RelocationTable::getContent(){
+	vector<RelocationTableLine*> result;
 	for(auto it = reloTable.begin();it!=reloTable.end();it++){
-		RelocationTableLine *line = it->second;
-		result.push_back(to_string(line->offset) + " " + (line->type == RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend));
+		// RelocationTableLine *line = it->second;
+		result.push_back(it->second);
+		// result.push_back(to_string(line->offset) + " " + (line->type == RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend));
 	}
 	return result;
 }

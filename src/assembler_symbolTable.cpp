@@ -185,9 +185,9 @@ void SymbolTable::printSection(string section){
 
 	res += "\n#.rela." + sctnline.name + "\n";
 	for(int i=0;i<sctnline.reloTable.size();i++){
-		// RelocationTable::RelocationTableLine *line = sctnline.reloTable[i];
-		// res+= (to_string(line->offset) + " " + (line->type == RelocationTable::RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend));
-		res += sctnline.reloTable[i] + "\n";
+		RelocationTableLine *line = sctnline.reloTable[i];
+		res+= (to_string(line->offset) + " " + (line->type == RelocationTable::RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend)) + "\n";
+		// res += sctnline.reloTable[i]->offset;
 	}
 }
 
@@ -210,9 +210,9 @@ void SymbolTable::printSection(string section, ofstream &out){
 		out<<res<<endl;
 	out<< "#.rela." + sctnline.name + "\n";
 	for(int i=0;i<sctnline.reloTable.size();i++){
-		// RelocationTable::RelocationTableLine *line = sctnline.reloTable[i];
-		// out<< (to_string(line->offset) + " " + (line->type == RelocationTable::RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend));
-		out<< sctnline.reloTable[i] + "\n";
+		RelocationTableLine *line = sctnline.reloTable[i];
+		out<< (to_string(line->offset) + " " + (line->type == RelocationTable::RelocationType::R_32 ? "R_32" : "R_PC32") + " "+ to_string(line->referencedSymbol) + " "+ to_string(line->addend))<<endl;
+		// out<< sctnline.reloTable[i] + "\n";
 	}
 }
 

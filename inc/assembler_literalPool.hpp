@@ -9,9 +9,9 @@ using namespace std;
 class LiteralPool{
 	struct LiteralPoolEntry{
 		int value;
-		RelocationTable::RelocationTableLine* reference;
+		RelocationTableLine* reference;
 
-		LiteralPoolEntry(int v, RelocationTable::RelocationTableLine* ref): value(v), reference(ref){}
+		LiteralPoolEntry(int v, RelocationTableLine* ref): value(v), reference(ref){}
 	};
 public:
 
@@ -27,7 +27,7 @@ public:
 
 	static size_t currentAddend;
 
-	static void handleNewLiteralPoolEntry(size_t locationCounter, int value, RelocationTable::RelocationTableLine* line);
+	static void handleNewLiteralPoolEntry(size_t locationCounter, int value, RelocationTableLine* line);
 
 	static void printLiteralPool();
 

@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "../inc/assembler_symbolTable.hpp"
+#include "../inc/assembler_relocationTableLine.hpp"
 
 using namespace std;
 
@@ -16,21 +17,9 @@ public:
 	friend class EquTable;
 	friend class SymbolTable;
 private:
-	struct RelocationTableLine{
-		enum RelocationType{R_32, R_PC32};
-		size_t offset;
-		RelocationType type;
-		size_t referencedSymbol;
-		string relocatedSymbol;
-		long addend;
-		RelocationTableLine(size_t o, RelocationType rt, size_t s, long a, string reloSymbol): offset(o), type(rt), referencedSymbol(s), addend(a), relocatedSymbol(reloSymbol){}
 
-		void printReloTableLine(){
-			cout << offset << " " << (type == R_32 ? "R_32" : "R_PC32") <<" " << referencedSymbol << " " << addend;
-		}
-	};
+	using RelocationType = RelocationTableLine::RelocationType;
 
-	using RelocationType = RelocationTable::RelocationTableLine::RelocationType;
 
 	RelocationTable(string sctn) : count(0), symbolTable(SymbolTable::getInstance()), section(sctn){
 		reloTable.clear();
@@ -38,7 +27,7 @@ private:
 
 	RelocationTableLine* handleNewReloLine(size_t offset, RelocationType type, string symbol);
 
-	vector<string> getContent();
+	vector<RelocationTableLine*> getContent();
 
 	SymbolTable::SymbolTableLine getSymbolToReference(string symbol);
 	

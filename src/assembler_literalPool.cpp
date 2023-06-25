@@ -15,7 +15,7 @@ void LiteralPool::printLiteralPool(){
 	}
 }
 
-void LiteralPool::handleNewLiteralPoolEntry(size_t locationCounter, int value, RelocationTable::RelocationTableLine* ref){
+void LiteralPool::handleNewLiteralPoolEntry(size_t locationCounter, int value, RelocationTableLine* ref){
 	count++;
 	LiteralPoolEntry* entry = new LiteralPoolEntry(value, ref);
 	literalPool.insert(make_pair(locationCounter, entry));

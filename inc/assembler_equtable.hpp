@@ -23,8 +23,11 @@ class EquTable{
   };
   struct EquSymbolReference{
     string symbol;
-    RelocationTable::RelocationTableLine* reloline;
-    EquSymbolReference(string s, RelocationTable::RelocationTableLine* l): symbol(s), reloline(l){}
+    RelocationTableLine* reloline;
+    bool displFitCheck;
+    string section;
+    size_t locationCounter;
+    EquSymbolReference(string s, RelocationTableLine* l, string sctn, bool check = false, size_t lc = 0): symbol(s), reloline(l), displFitCheck(check), section(sctn), locationCounter(lc){}
   };
 public:
   static map<string, EquTableLine*> equTable;
@@ -39,7 +42,7 @@ public:
 
   static bool resolveSingleSymbol(string symbol);
 
-  static void handleEquReference(string symbol, RelocationTable::RelocationTableLine *line);
+  static void handleEquReference(string symbol, RelocationTableLine *line, string section, bool displFitCheck = false, size_t locationCounter = 0);
 
   static void fixEquRelocations();
 };

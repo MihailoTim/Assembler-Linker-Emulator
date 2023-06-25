@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include "../inc/assembler_exceptions.hpp"
+#include "../inc/assembler_relocationTableLine.hpp"
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -80,7 +81,7 @@ private:
 		size_t length;
 		string name;
 		string content;
-		vector<string> reloTable;
+		vector<RelocationTableLine*> reloTable;
 		size_t symTabId;
 		SectionTableLine(){}
 		SectionTableLine(size_t b, size_t l, string n, size_t stid): base(b), length(l), name(n), symTabId(stid){}

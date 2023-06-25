@@ -1,5 +1,6 @@
 #include "../inc/assembler_equtable.hpp"
-
+#include "../inc/assembler_secondPass.hpp"
+#include "../inc/assembler_assemblyInstruction.hpp"
 
 
 map<string, EquTable::EquTableLine*> EquTable::equTable;
@@ -147,14 +148,44 @@ bool EquTable::resolveSingleSymbol(string symbol){
   return true;
 }
 
-void EquTable::handleEquReference(string symbol, RelocationTable::RelocationTableLine* line){
-  equReferences.push_back(new EquSymbolReference(symbol, line));
+void EquTable::handleEquReference(string symbol, RelocationTableLine* line, string section, bool displFitCheck, size_t locationCounter){
+  equReferences.push_back(new EquSymbolReference(symbol, line, section, displFitCheck, locationCounter));
 }
 
 void EquTable::fixEquRelocations(){
   for(auto ref : equReferences){
     SymbolTable::SymbolTableLine *stline = &symbolTable->symbolTable[ref->symbol];
-    ref->reloline->addend = stline->value;
-    ref->reloline->referencedSymbol = stline->ndx;
+    if(ref->displFitCheck){
+      if(stline->type != SymbolTable::SymbolType::EQU_LITERAL){
+        throw new Exception("Symbol whose value cannot be determined is being used in regind addressing");
+      }
+      else{
+        if(!SecondPass::canFitInDispl(stline->value, 0)){
+          throw new Exception("Symbol value can't be embedded into a 12 bit displacement");
+        }
+        else{
+          SymbolTable::SectionTableLine* sctnline = &symbolTable->sectionTable[ref->section];
+			    int displ  = stline->value;
+				  string byte3 = AssemblyInstruction::getByte((displ >> 8) & 0xF);
+				  string byte4 = AssemblyInstruction::getByte(displ & 0xFF);
+				  string replacement = byte3 + byte4;
+				  sctnline->content.replace((ref->locationCounter*2 + 5), 3, replacement.substr(1));
+			  }
+		  }
+    }
+    else{
+      SymbolTable::SectionTableLine* sctnline = &symbolTable->sectionTable[ref->section];
+      size_t id = ref->reloline->id;
+      RelocationTableLine* reloline = nullptr;
+      for(auto it : sctnline->reloTable){
+        if(it->id == id)
+          reloline = it;
+      }
+      // if(reloline){
+      //   if(stline->type == SymbolTable::SymbolType::EQU_SYMBOL)
+      //     reloline->addend = stline->value;
+      //   reloline->referencedSymbol = (stline->ndx < 0 ? stline->num : stline->ndx);
+      // }
+    }
   }
 }
