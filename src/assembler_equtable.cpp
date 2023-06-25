@@ -181,11 +181,11 @@ void EquTable::fixEquRelocations(){
         if(it->id == id)
           reloline = it;
       }
-      // if(reloline){
-      //   if(stline->type == SymbolTable::SymbolType::EQU_SYMBOL)
-      //     reloline->addend = stline->value;
-      //   reloline->referencedSymbol = (stline->ndx < 0 ? stline->num : stline->ndx);
-      // }
+      if(reloline){
+        if(stline->type == SymbolTable::SymbolType::EQU_SYMBOL)
+          reloline->addend = stline->value;
+        reloline->referencedSymbol = (stline->ndx < 0 ? stline->num : stline->ndx);
+      }
     }
   }
 }

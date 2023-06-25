@@ -24,12 +24,12 @@ void RelocationTable::resolveRelocations(){
 		}
 		else{
 			if(stline->type == SymbolTable::SymbolType::EQU_LITERAL){
-				replacement = stline->offset;
+				replacement = stline->offset + reloLine->addend;
 			}
 			else{
 				string ref = SymbolTable::symbolLookupTable[stline->ndx];
 				SymbolTable::SymbolTableLine* refLine = SymbolTable::symbolTable[ref];
-				replacement = stline->offset + refLine->virtualAddress;
+				replacement = stline->offset + refLine->virtualAddress + reloLine->addend;
 			}
 		}
 		string bytes = Parser::get4BytesLittleEndian(replacement);

@@ -8,6 +8,8 @@
 .equ H, label1 - main + E
 .equ I, label1 + 3
 .equ J, papa_main
+.equ four, 0x04
+.equ eight, 0x08
 .global C
 .extern end
 .extern handler
@@ -19,8 +21,8 @@ main:
 label1:
   ld $data, %r1
   ld [%r1 + 0], %r2
-  ld [%r1 + 0x4], %r3
-  ld [%r1 + 0x8], %r4
+  ld [%r1 + four], %r3
+  ld [%r1 + eight], %r4
   ld [%r1 + 0xc], %r5
   ld [%r1 + 0x10], %r6
   ld [%r1 + 0x14], %r7

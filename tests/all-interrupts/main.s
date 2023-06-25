@@ -1,8 +1,9 @@
 .extern handler
-.global end, timer_counter, terminal_counter, term_out
+.global end, timer_counter, terminal_counter, term_out, term_in
 
 .equ stack_pointer, 0xFFFFFF00
 .equ term_out, 0xFFFFFF00
+.equ term_in, 0xFFFFFF10
 .equ tim_cfg, 0xFFFFFF10
 .equ count5, 5
 .equ count10, 10
