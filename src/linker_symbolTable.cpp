@@ -46,6 +46,8 @@ void SymbolTable::insertNewSymbol(size_t num, size_t value, size_t size, SymbolT
 }
 
 void SymbolTable::insertNewEquSymbol(size_t num, size_t value, size_t size, SymbolType type, SymbolBind bind, int ndx, string name, string section){
+	if(bind == SymbolBind::LOC)
+		return;
 	// cout<<"Name: "<<name<<" Type: "<<type<<endl;
 	if(symbolTable.count(name)){
 		SymbolTableLine *stline = symbolTable[name];

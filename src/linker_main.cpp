@@ -49,7 +49,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-
 	if(mode == LinkerMode::HEX){
 
 		SectionTable::resolveSectionPlacements();
@@ -61,6 +60,7 @@ int main(int argc, char** argv) {
 		SymbolTable::updateEquSymbolVirtualAddresses();
 
 		RelocationTable::resolveRelocations();
+
 		bool check = SymbolTable::checkHexCompatible();
 		if(!check){
 			throw new Exception("Can't make hex as there are unresolved symbols");
@@ -77,10 +77,14 @@ int main(int argc, char** argv) {
 
 		RelocationTable::resolveRelocations();
 
+
 		ofstream out(fileOut);
 		SectionTable::printSectionHeadersToOutput(out);
+
 		SymbolTable::printSymbolTableToOutput(out);
+
 		SectionTable::printSectionContentToOutput(out);
+
 		// SymbolTable::printSymbolTable();
 	}
 	return 0;

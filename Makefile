@@ -13,7 +13,7 @@ tmp:
 	mkdir -p tmp
 
 tmp/bison.cpp tmp/parser.h: misc/assembler_parser.y | tmp
-	cd tmp && bison -o bison.cpp --defines=parser.h ../misc/assembler_parser.y
+	cd tmp && bison --warnings=none -o bison.cpp --defines=parser.h ../misc/assembler_parser.y
 
 tmp/lexer.cpp tmp/lexer.h: misc/assembler_lexer.lex | tmp
 	cd tmp && flex -o lexer.cpp --header-file=lexer.h ../misc/assembler_lexer.lex

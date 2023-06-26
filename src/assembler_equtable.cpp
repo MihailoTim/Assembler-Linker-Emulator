@@ -179,7 +179,6 @@ void EquTable::fixEquRelocations(){
         string bytes = sctnline->content.substr(ref->locationCounter*2, 8);
         int displ = stol(sctnline->content.substr(ref->locationCounter*2 + 5, 3), nullptr, 16);
         displ = (displ<<20)>>20;
-        cout<<bytes<<" "<<displ<<endl;
         size_t location = ref->locationCounter + displ + (ref->type == EquReferenceType::INDIRECT ? 4 : 0);
         // string byte1 = AssemblyInstruction::getByte((stline->value >> 24) & 0xF);
         // string byte2 = AssemblyInstruction::getByte((stline->value >> 16) & 0xF);
@@ -187,7 +186,6 @@ void EquTable::fixEquRelocations(){
         // string byte4 = AssemblyInstruction::getByte(stline->value & 0xFF);
         string replacement = AssemblyInstruction::get4BytesLittleEndian(stline->value);
         sctnline->content.replace((location*2), 8, replacement);
-        cout<<location<<" "<<replacement<<endl;
       }
       size_t id = ref->reloline->id;
       RelocationTableLine* reloline = nullptr;

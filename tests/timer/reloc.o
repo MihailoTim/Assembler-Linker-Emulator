@@ -1,17 +1,24 @@
 #shdr
 0 0 
 0 128 my_handler
-132 4 software_section
+332 4 software_section
 128 4 terminal_section
+132 200 timer_section
 #symtab
 0 0 0 1 0 0 
 1 0 0 1 0 1 my_handler
-2 0 0 0 1 -2 isr_timer
+2 0 0 0 1 7 isr_timer
 3 0 0 0 1 6 isr_terminal
-4 0 0 0 1 7 isr_software
+4 0 0 0 1 13 isr_software
 5 0 0 0 1 1 handler
 6 0 0 1 0 6 terminal_section
-7 0 0 1 0 7 software_section
+7 0 0 1 0 7 timer_section
+8 0 0 0 1 -2 iterations_left
+9 0 0 0 1 -2 end
+10 0 0 0 1 -2 counter
+11 0 0 0 1 -2 term_out
+12 0 0 0 1 -2 tim_cfg
+13 0 0 1 0 13 software_section
 #
 #.rela.
 #my_handler
@@ -28,9 +35,9 @@
 02 00 00 00 34 00 00 00 
 03 00 00 00 3c 00 00 00 
 04 00 00 00 44 00 00 00 
-00 00 00 00 24 00 00 00 
+84 00 00 00 24 00 00 00 
 80 00 00 00 24 00 00 00 
-84 00 00 00 24 00 00 00
+4c 01 00 00 24 00 00 00
 #.rela.my_handler
 84 R_32 1 52
 92 R_32 1 60
@@ -47,3 +54,42 @@
 #terminal_section
 93 fe 00 04
 #.rela.terminal_section
+#timer_section
+81 e0 1f fc 81 e0 2f fc 
+81 e0 3f fc 92 1f 00 70 
+92 11 00 00 39 f0 10 6c 
+92 2f 00 6c 82 f0 20 6c 
+92 3f 00 6c 92 33 00 00 
+92 2f 00 68 50 33 20 00 
+82 f0 30 64 3a f1 30 64 
+92 1f 00 64 82 f0 10 64 
+51 33 20 00 82 f0 30 60 
+92 2f 00 60 82 f0 20 60 
+92 2f 00 60 82 f0 20 60 
+92 1f 00 60 92 11 00 00 
+92 2f 00 5c 50 11 20 00 
+82 f0 10 58 93 3e 00 04 
+93 2e 00 04 93 1e 00 04 
+93 fe 00 04 30 f0 00 48 
+00 00 00 00 00 00 00 00 
+54 00 00 00 00 00 00 00 
+00 00 00 00 01 00 00 00 
+00 00 00 00 6c 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 0d 00 00 00 
+00 00 00 00 0a 00 00 00 
+00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00
+#.rela.timer_section
+128 R_32 8 0
+132 R_32 9 0
+140 R_32 11 0
+144 R_32 10 0
+152 R_32 10 0
+156 R_32 7 108
+164 R_32 10 0
+168 R_32 8 0
+176 R_32 11 0
+184 R_32 11 0
+188 R_32 12 0
+196 R_32 12 0

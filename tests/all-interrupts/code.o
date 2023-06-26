@@ -16,20 +16,13 @@
 6 4 0 0 1 1 terminal_counter
 7 18446744073709551360 0 5 1 -1 term_out
 8 18446744073709551376 0 5 1 -1 term_in
-9 18446744073709551360 0 5 0 -1 stack_pointer
-10 18446744073709551376 0 5 0 -1 tim_cfg
-11 5 0 5 0 -1 count5
-12 10 0 5 0 -1 count10
-13 0 0 1 0 13 messages
-14 0 0 1 0 14 timer_section
-15 0 0 0 1 18 printer
-16 0 0 0 1 14 isr_timer
-17 16 0 5 0 -1 timer_message_len
-18 0 0 1 0 18 printer_function
-19 10 0 5 0 -1 LF
-20 0 0 1 0 20 software_section
-21 0 0 0 1 20 isr_software
-22 20 0 5 0 -1 software_message_len
+9 0 0 1 0 9 messages
+10 0 0 1 0 10 timer_section
+11 0 0 0 1 13 printer
+12 0 0 0 1 10 isr_timer
+13 0 0 1 0 13 printer_function
+14 0 0 1 0 14 software_section
+15 0 0 0 1 14 isr_software
 #
 #.rela.
 #data
@@ -82,10 +75,7 @@
 0d 00 00 00 00 ff ff ff 
 0a 00 00 00 00 ff ff ff
 #.rela.printer_function
-100 R_32 7 0
-108 R_32 18 36
-116 R_32 7 0
-124 R_32 7 0
+108 R_32 13 36
 #software_section
 81 e0 1f fc 81 e0 2f fc 
 92 1f 00 28 92 2f 00 28 
@@ -96,8 +86,8 @@
 30 f0 00 0c 10 00 00 00 
 14 00 00 00 e8 00 00 00
 #.rela.software_section
-52 R_32 13 16
-60 R_32 15 0
+52 R_32 9 16
+60 R_32 11 0
 #timer_section
 81 e0 1f fc 81 e0 2f fc 
 92 1f 00 3c 92 2f 00 3c 
@@ -112,7 +102,7 @@
 e8 00 00 00 00 00 00 00 
 01 00 00 00 00 00 00 00
 #.rela.timer_section
-72 R_32 13 0
-80 R_32 15 0
+72 R_32 9 0
+80 R_32 11 0
 84 R_32 5 0
 92 R_32 5 0

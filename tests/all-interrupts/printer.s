@@ -1,5 +1,6 @@
 .global printer
-.extern term_out, term_in
+.equ term_out, 0xFFFFFF00
+.equ term_in, 0xFFFFFF04
 .equ LF, 0x0A
 
 .section printer_function
