@@ -1,10 +1,13 @@
-.global A,B,C,D,J,K
+.extern F
+.global A,B,C,D,J,K,N
 .equ A, 1  # 1
 .equ B, labela2 - labela1 # 5
-.equ C, labela3 # 20
-.equ D, C + 10 # 30
-.equ J, labela3 - labela2 - labela1 + 10
-.equ K, J - C + A # -4
+.equ C, labela3 + 5 # 30
+.equ D, C + 10 # 35
+.equ J, labela3 - labela2 - labela1 + 10 # 20
+.equ K, J - C + A # -9
+.equ M, labela2 + 7
+.equ N, F + M - C # F - 8
 .section text
 .skip 5
 labela1:

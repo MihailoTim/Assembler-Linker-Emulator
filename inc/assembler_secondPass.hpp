@@ -142,7 +142,7 @@ public:
 
     static void fixReloTable();
 
-    void setOutputFile(char *fileOut){objectFile.open(fileOut);}
+    void setOutputFile(const char *fileOut){objectFile.open(fileOut);}
 
 	inline PassStatus getStatus(){return status;}
 

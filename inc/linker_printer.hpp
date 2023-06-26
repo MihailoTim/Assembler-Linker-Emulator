@@ -6,7 +6,7 @@ using namespace std;
 
 class Printer{
 public:
-	static void printAllSectionsToHex(char* fileOut);
+	static void printAllSectionsToHex(const char* fileOut);
 
 	static vector<pair<size_t, string>> sortSectionsByBase();
 };

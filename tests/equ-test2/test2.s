@@ -2,8 +2,8 @@
 .global E,F,G,H,L
 .equ E, labela6 - labela5 # 15
 .equ F, labela5 # 5
-.equ G, C + 10 # 30
-.equ H, D - 3 # 27
+.equ G, C + 10 # 35
+.equ H, D - 3 # 32
 .equ L, K + 2
 .section data
 labela4:

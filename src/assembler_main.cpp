@@ -12,7 +12,7 @@ extern int yylex();
 extern int yyparse();
 
 char* fileIn;
-char* fileOut = "default.o";
+string fileOut("default.o");
 
 void checkArguments(int argc, char **argv){
 	if(argc == 1){
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
 	FirstPass &firstPass = FirstPass::getInstance();
 	SecondPass &secondPass = SecondPass::getInstance();
-	secondPass.setOutputFile(fileOut);
+	secondPass.setOutputFile(fileOut.c_str());
 
 	FILE* file = fopen(fileIn, "r");
 	if(file) {

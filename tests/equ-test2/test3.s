@@ -1,5 +1,5 @@
-.extern A,B,C,D,E,F,G,H,J,K,L
-.equ I, G - 7 # 23
+.extern A,B,C,D,E,F,G,H,J,K,L,N
+.equ I, G - 7 # 28
 .section main
 ld $A, %r1
 ld $B, %r2
@@ -13,5 +13,6 @@ ld $I, %r9
 ld $J, %r10
 ld $K, %r11
 ld $L, %r12
+ld $N, %r13
 halt
 .end

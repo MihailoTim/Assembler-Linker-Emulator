@@ -8,7 +8,7 @@
 #include "../inc/linker_printer.hpp"
 using namespace std;
 
-char *fileOut = "default.hex";
+string fileOut("default.hex");
 
 enum LinkerMode{UNDEFINED, RELOCATABLE, HEX};
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 		if(!check){
 			throw new Exception("Can't make hex as there are unresolved symbols");
 		}
-		Printer::printAllSectionsToHex(fileOut);
+		Printer::printAllSectionsToHex(fileOut.c_str());
 	}
 	else if(mode == LinkerMode::RELOCATABLE){
 

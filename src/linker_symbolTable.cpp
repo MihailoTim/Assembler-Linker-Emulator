@@ -67,7 +67,11 @@ void SymbolTable::insertNewEquSymbol(size_t num, size_t value, size_t size, Symb
 		throw new Exception("Multiple definitions of same symbol "+name);
 	}
 	size_t n = symbolTable.size();
-	int index = ndx > 0 ? symbolTable[section]->num : ndx;
+	int index = -1;
+	if(symbolTable.count(section))
+		index = symbolTable[section]->num;
+	else
+		index = ndx;
 	SymbolTableLine *stline = new SymbolTableLine(n, value, 0, type, bind, index, name);
 	symbolTable.insert(make_pair(name, stline));
 	symbolLookupTable.insert(make_pair(n, name));
@@ -104,7 +108,7 @@ void SymbolTable::updateEquSymbolVirtualAddresses(){
 			string refSym = SymbolTable::symbolLookupTable[it->second->ndx];
 			SymbolTable::SymbolTableLine* refLine = SymbolTable::symbolTable[refSym];
 			size_t addend = 0;
-			while(refLine->type == EQU_SYMBOL){
+			while(refLine->type == EQU_SYMBOL && refLine->num != it->second->num){
 				addend+=refLine->offset;
 				refSym = SymbolTable::symbolLookupTable[refLine->ndx];
 				if(refSym == it->second->name){

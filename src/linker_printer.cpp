@@ -3,7 +3,7 @@
 #include <fstream>
 #include <algorithm>
 
-void Printer::printAllSectionsToHex(char* fileOut){
+void Printer::printAllSectionsToHex(const char* fileOut){
 	map<size_t, string> outputMap;
 	ofstream out(fileOut);
 	for(auto it = SectionTable::sectionTable.begin(); it!= SectionTable::sectionTable.end(); it++){

@@ -2,8 +2,8 @@
 .global calla, end, local_b, d
 
 
-.equ local_b, b
-.equ d, c
+.equ local_b, b + 3
+.equ d, c + 4
 
 .section test1
 
