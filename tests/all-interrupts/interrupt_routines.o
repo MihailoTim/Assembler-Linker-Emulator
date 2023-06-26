@@ -14,6 +14,7 @@
 7 0 0 1 0 7 terminal_section
 8 0 0 0 1 -2 printer
 9 0 0 0 1 -2 terminal_counter
+10 20 0 5 0 -1 terminal_message_len
 #
 #.rela.
 #messages
@@ -58,7 +59,7 @@
 50 11 20 00 82 f0 10 24 
 93 2e 00 04 93 1e 00 04 
 93 fe 00 04 30 f0 00 18 
-00 00 00 00 12 00 00 00 
+00 00 00 00 14 00 00 00 
 00 00 00 00 00 00 00 00 
 01 00 00 00 00 00 00 00
 #.rela.terminal_section

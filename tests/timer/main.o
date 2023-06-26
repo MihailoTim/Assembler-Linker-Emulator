@@ -5,12 +5,15 @@
 #symtab
 0 0 0 0 0 0 
 1 0 0 0 1 -2 handler
-2 0 0 0 1 7 iterations_left
-3 16 0 0 1 5 end
-4 4 0 0 1 7 counter
-5 0 0 1 0 5 main
-6 12 0 0 0 5 wait
-7 0 0 1 0 7 data
+2 0 0 0 1 10 iterations_left
+3 16 0 0 1 8 end
+4 4 0 0 1 10 counter
+5 18446744073709551360 0 5 1 -1 term_out
+6 18446744073709551376 0 5 1 -1 tim_cfg
+7 18446744073709551360 0 5 0 -1 stack_pointer
+8 0 0 1 0 8 main
+9 12 0 0 0 8 wait
+10 0 0 1 0 10 data
 #
 #.rela.
 #data
@@ -24,4 +27,4 @@
 0c 00 00 00
 #.rela.main
 28 R_32 1 0
-32 R_32 5 12
+32 R_32 8 12

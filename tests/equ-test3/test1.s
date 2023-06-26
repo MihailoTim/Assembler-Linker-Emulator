@@ -1,7 +1,7 @@
-.equ A, 1
+.equ A, 4
 .equ B, data 
 .section main
-ld $0, %r1
+ld $B, %r1
 ld [%r1 + A], %r2
 halt
 .skip 8

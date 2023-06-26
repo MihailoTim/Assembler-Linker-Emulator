@@ -11,6 +11,9 @@ using namespace std;
 #define _EQU_TABLE_H
 
 class EquTable{
+
+  enum EquReferenceType{DIRECT, INDIRECT};
+
   struct EquTableArgument{
     bool isSymbol;
     string stringVal;
@@ -27,7 +30,8 @@ class EquTable{
     bool displFitCheck;
     string section;
     size_t locationCounter;
-    EquSymbolReference(string s, RelocationTableLine* l, string sctn, bool check = false, size_t lc = 0): symbol(s), reloline(l), displFitCheck(check), section(sctn), locationCounter(lc){}
+    EquReferenceType type;
+    EquSymbolReference(string s, RelocationTableLine* l, string sctn, bool check = false, size_t lc = 0, EquReferenceType t= INDIRECT): symbol(s), reloline(l), displFitCheck(check), section(sctn), locationCounter(lc), type(t){}
   };
 public:
   static map<string, EquTableLine*> equTable;
@@ -42,9 +46,11 @@ public:
 
   static bool resolveSingleSymbol(string symbol);
 
-  static void handleEquReference(string symbol, RelocationTableLine *line, string section, bool displFitCheck = false, size_t locationCounter = 0);
+  static void handleEquReference(string symbol, RelocationTableLine *line, string section, bool displFitCheck = false, size_t locationCounter = 0, EquReferenceType type = EquReferenceType::INDIRECT);
 
   static void fixEquRelocations();
+
+  friend class SecondPass;
 };
 
 #endif

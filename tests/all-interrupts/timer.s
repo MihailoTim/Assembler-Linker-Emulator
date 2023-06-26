@@ -1,13 +1,14 @@
 .extern printer, timer_counter
 .global isr_timer
 .section timer_section
+.equ timer_message_len, timer_message_end-timer_message_start
 isr_timer:
 
 	push %r1
 	push %r2
 
-	ld $timer_message, %r1
-	ld $15, %r2
+	ld $timer_message_start, %r1
+	ld $timer_message_len, %r2
 	push %r1
 	push %r2
 	call printer
@@ -27,7 +28,8 @@ isr_timer:
 	ret
 
 .section messages
-timer_message:
+timer_message_start:
 	.ascii "TIMER INTERRUPT"
+timer_message_end:
 
 .end

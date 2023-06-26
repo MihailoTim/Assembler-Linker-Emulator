@@ -148,8 +148,8 @@ bool EquTable::resolveSingleSymbol(string symbol){
   return true;
 }
 
-void EquTable::handleEquReference(string symbol, RelocationTableLine* line, string section, bool displFitCheck, size_t locationCounter){
-  equReferences.push_back(new EquSymbolReference(symbol, line, section, displFitCheck, locationCounter));
+void EquTable::handleEquReference(string symbol, RelocationTableLine* line, string section, bool displFitCheck, size_t locationCounter, EquReferenceType type){
+  equReferences.push_back(new EquSymbolReference(symbol, line, section, displFitCheck, locationCounter, type));
 }
 
 void EquTable::fixEquRelocations(){
@@ -175,8 +175,33 @@ void EquTable::fixEquRelocations(){
     }
     else{
       SymbolTable::SectionTableLine* sctnline = &symbolTable->sectionTable[ref->section];
+      if(stline->type == SymbolTable::SymbolType::EQU_LITERAL){
+        string bytes = sctnline->content.substr(ref->locationCounter*2, 8);
+        int displ = stol(sctnline->content.substr(ref->locationCounter*2 + 5, 3), nullptr, 16);
+        displ = (displ<<20)>>20;
+        cout<<bytes<<" "<<displ<<endl;
+        size_t location = ref->locationCounter + displ + (ref->type == EquReferenceType::INDIRECT ? 4 : 0);
+        // string byte1 = AssemblyInstruction::getByte((stline->value >> 24) & 0xF);
+        // string byte2 = AssemblyInstruction::getByte((stline->value >> 16) & 0xF);
+        // string byte3 = AssemblyInstruction::getByte((stline->value >> 8) & 0xF);
+        // string byte4 = AssemblyInstruction::getByte(stline->value & 0xFF);
+        string replacement = AssemblyInstruction::get4BytesLittleEndian(stline->value);
+        sctnline->content.replace((location*2), 8, replacement);
+        cout<<location<<" "<<replacement<<endl;
+      }
       size_t id = ref->reloline->id;
       RelocationTableLine* reloline = nullptr;
+      vector<RelocationTableLine*> newReloTable;
+      for(auto it : sctnline->reloTable){
+        if(it->id == id)
+          reloline = it;
+        string referencedSymbol = symbolTable->symbolLookupTable[it->referencedSymbol];
+        SymbolTable::SymbolTableLine* stline = &symbolTable->symbolTable[referencedSymbol];
+        if(stline->type != SymbolTable::SymbolType::EQU_LITERAL){
+          newReloTable.push_back(it);
+        }
+      }
+      sctnline->reloTable = newReloTable;
       for(auto it : sctnline->reloTable){
         if(it->id == id)
           reloline = it;
