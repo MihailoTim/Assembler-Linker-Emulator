@@ -14,8 +14,8 @@
 4 60 0 0 1 2 end
 5 0 0 0 1 1 timer_counter
 6 4 0 0 1 1 terminal_counter
-7 18446744073709551360 0 5 1 -1 term_out
-8 18446744073709551376 0 5 1 -1 term_in
+7 18446744073709551360 0 5 1 0 term_out
+8 18446744073709551364 0 5 1 0 term_in
 9 0 0 1 0 9 messages
 10 0 0 1 0 10 timer_section
 11 0 0 0 1 13 printer

@@ -3,7 +3,7 @@
 
 .equ stack_pointer, 0xFFFFFF00
 .equ term_out, 0xFFFFFF00
-.equ term_in, 0xFFFFFF10
+.equ term_in, 0xFFFFFF04
 .equ tim_cfg, 0xFFFFFF10
 .equ count5, 5
 .equ count10, 10
