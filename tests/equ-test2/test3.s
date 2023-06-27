@@ -1,5 +1,5 @@
 .extern A,B,C,D,E,F,G,H,J,K,L,N
-.equ I, G - 7 # 28
+.equ I, G - 7 # 33
 .section main
 ld $A, %r1
 ld $B, %r2

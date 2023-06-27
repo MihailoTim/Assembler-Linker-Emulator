@@ -2,9 +2,9 @@
 .global E,F,G,H,L
 .equ E, labela6 - labela5 # 15
 .equ F, labela5 # 5
-.equ G, C + 10 # 35
-.equ H, D - 3 # 32
-.equ L, K + 2
+.equ G, C + 10 # 40
+.equ H, D - 3 # 37
+.equ L, K + 2 # -7
 .section data
 labela4:
 .skip 5

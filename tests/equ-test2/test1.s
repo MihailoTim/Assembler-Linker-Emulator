@@ -3,7 +3,7 @@
 .equ A, 1  # 1
 .equ B, labela2 - labela1 # 5
 .equ C, labela3 + 5 # 30
-.equ D, C + 10 # 35
+.equ D, C + 10 # 40
 .equ J, labela3 - labela2 - labela1 + 10 # 20
 .equ K, J - C + A # -9
 .equ M, labela2 + 7

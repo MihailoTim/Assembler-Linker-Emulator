@@ -1,8 +1,9 @@
-.extern end, local_b, d
+.extern end, local_b, d, local_c
 .global b, c, a
 .equ b, d
-.equ c, local_b + 2
+.equ c, b + 2
 .section test2
 a:
+  ld $local_c, %r1
   call end
 .end

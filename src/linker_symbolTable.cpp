@@ -2,6 +2,7 @@
 #include "../inc/linker_sectionTable.hpp"
 #include "../inc/linker_exceptions.hpp"
 #include <fstream>
+#include <set>
 
 map<string, SymbolTable::SymbolTableLine*> SymbolTable::symbolTable;
 map<int, string> SymbolTable::symbolLookupTable;
@@ -108,13 +109,19 @@ void SymbolTable::updateEquSymbolVirtualAddresses(){
 			string refSym = SymbolTable::symbolLookupTable[it->second->ndx];
 			SymbolTable::SymbolTableLine* refLine = SymbolTable::symbolTable[refSym];
 			size_t addend = 0;
+			set<string> checkCycle;
 			while(refLine->type == EQU_SYMBOL && refLine->num != it->second->num){
+				checkCycle.insert(refSym);
 				addend+=refLine->offset;
 				refSym = SymbolTable::symbolLookupTable[refLine->ndx];
-				if(refSym == it->second->name){
-					throw new Exception("Circular dependency while resovling .equ");
+				if(checkCycle.count(refSym)){
+					throw new Exception("Circular dependency while resovling .equ: " + it->second->name);
 				}
 				refLine = SymbolTable::symbolTable[refSym];
+			}
+			refSym = SymbolTable::symbolLookupTable[refLine->ndx];
+			if(checkCycle.count(refSym)){
+					throw new Exception("Circular dependency while resovling .equ: " + it->second->name);
 			}
 			addend += refLine->virtualAddress;
 			it->second->virtualAddress = it->second->offset + addend;;
